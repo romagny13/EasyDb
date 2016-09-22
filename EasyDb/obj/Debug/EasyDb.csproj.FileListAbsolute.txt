@@ -1,0 +1,5 @@
+c:\users\romag\documents\visual studio 2015\Projects\EasyDb\EasyDb\bin\Debug\EasyDb.dll
+c:\users\romag\documents\visual studio 2015\Projects\EasyDb\EasyDb\bin\Debug\EasyDb.pdb
+c:\users\romag\documents\visual studio 2015\Projects\EasyDb\EasyDb\obj\Debug\EasyDb.dll
+c:\users\romag\documents\visual studio 2015\Projects\EasyDb\EasyDb\obj\Debug\EasyDb.pdb
+C:\Users\romag\Documents\visual studio 2015\Projects\EasyDb\EasyDb\obj\Debug\EasyDb.csprojResolveAssemblyReference.cache
