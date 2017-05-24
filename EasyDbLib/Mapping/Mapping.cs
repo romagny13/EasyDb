@@ -1,35 +1,31 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace EasyDbLib
 {
     public class Mapping
     {
-        protected Dictionary<string, ColumnMapping> columnMappings;
+        protected static Dictionary<string, Table> container;
 
-        public Mapping()
+        static Mapping()
         {
-            this.columnMappings = new Dictionary<string, ColumnMapping>();
+            container = new Dictionary<string, Table>();
         }
 
-        public static Mapping Create()
+        public static Table AddTable(string tableName)
         {
-            return new Mapping();
+            var result = new Table(tableName);
+            container[tableName] = result;
+            return result;
         }
 
-        public Mapping Add(string columnName, string propertyName, bool ignore = false)
+        public static bool HasTable(string tableName)
         {
-            this.columnMappings[columnName] = new ColumnMapping(columnName,propertyName, ignore);
-            return this;
+            return container.ContainsKey(tableName);
         }
 
-        public bool Has(string columnName)
+        public static Table GetTable(string tableName)
         {
-            return this.columnMappings.ContainsKey(columnName);
-        }
-
-        public ColumnMapping Get(string columnName)
-        {
-            return this.columnMappings[columnName];
+            return container[tableName];
         }
     }
 }

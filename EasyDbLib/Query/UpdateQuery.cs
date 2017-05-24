@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace EasyDbLib
@@ -9,27 +7,20 @@ namespace EasyDbLib
 
     public class UpdateQuery
     {
-        protected IQueryBuilderService queryBuilderService;
-
-        protected string table;
-        protected string[] columns;
-        protected Condition condition;
-        protected Dictionary<string, object> columnValues;
-
-        protected bool hasSet = false;
-        protected bool hasWhere = false;
+        protected IQueryService queryService;
         protected EasyDb easyDbInstance;
+        protected string table;
+        protected Dictionary<string, object> columnValues;
+        protected ConditionAndParameterContainer condition;
+        protected bool hasSet;
+        protected bool hasCondition;
 
-        public UpdateQuery(string table, EasyDb easyDbInstance)
-            :this(new QueryBuilderService(), table, easyDbInstance)
-        { }
-
-        public UpdateQuery(IQueryBuilderService queryBuilderService, string table, EasyDb easyDbInstance)
+        public UpdateQuery(IQueryService queryService, EasyDb easyDbInstance, string table)
         {
-            this.queryBuilderService = queryBuilderService;
-            this.table = table;
             this.columnValues = new Dictionary<string, object>();
+            this.queryService = queryService;
             this.easyDbInstance = easyDbInstance;
+            this.table = table;
         }
 
         public UpdateQuery Set(string column, object value)
@@ -42,25 +33,48 @@ namespace EasyDbLib
 
         public UpdateQuery Where(Condition condition)
         {
-            if (this.hasWhere) { throw new Exception("One where clause"); }
-
-            this.condition = condition;
-            this.hasWhere = true;
+            if (this.hasCondition) { throw new Exception("One clause where"); }
+            this.condition = new ConditionAndParameterContainer(condition);
+            this.hasCondition = true;
             return this;
         }
 
-        public string Build()
+        public string GetQuery()
         {
-            if(!this.hasSet) { throw new Exception("No column and values"); }
+            if (!this.hasSet) { throw new Exception("No column and values provided"); }
 
-            return this.queryBuilderService.GetUpdateString(this.table, this.columnValues,this.condition);
+            return this.queryService.GetUpdate(this.table, this.columnValues, this.condition);
         }
 
-        //public function execute()
-        //{
-        //    $queryString = $this->build();
+        protected EasyDbCommand CreateCommand()
+        {
+            var query = this.GetQuery();
 
-        //    return Db::getInstance()->query($queryString)->execute();
-        //}
+            var command = this.easyDbInstance.CreateCommand(query);
+
+            if (this.hasCondition)
+            {
+                command.AddParameter(this.condition.Main.ParameterName, this.condition.Main.ParameterValue);
+
+                if (this.condition.HasConditions())
+                {
+                    foreach (var subCondittion in this.condition.SubConditions)
+                    {
+                        if (subCondittion.IsConditionOp)
+                        {
+                            command.AddParameter(subCondittion.ParameterName, subCondittion.ParameterValue);
+                        }
+                    }
+                }
+            }
+
+            return command;
+        }
+
+        public async Task<int> NonQueryAsync()
+        {
+            var command = this.CreateCommand();
+            return await command.NonQueryAsync();
+        }
     }
 }

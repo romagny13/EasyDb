@@ -5,43 +5,56 @@ namespace EasyDbLib
 {
     public class DeleteQuery
     {
-        protected IQueryBuilderService queryBuilderService;
-
-        protected string table;
-        protected Condition condition;
-        protected bool hasWhere;
+        protected IQueryService queryService;
         protected EasyDb easyDbInstance;
+        protected string tableName;
+        protected ConditionAndParameterContainer condition;
+        protected bool hasCondition;
 
-        public DeleteQuery(string table, EasyDb easyDbInstance)
-            :this(new QueryBuilderService(), table, easyDbInstance)
-        { }
-
-        public DeleteQuery(IQueryBuilderService queryBuilderService, string table, EasyDb easyDbInstance)
+        public DeleteQuery(IQueryService queryService, EasyDb easyDbInstance, string tableName)
         {
-            this.queryBuilderService = queryBuilderService;
-            this.table = table;
+            this.queryService = queryService;
             this.easyDbInstance = easyDbInstance;
+            this.tableName = tableName;
         }
 
         public DeleteQuery Where(Condition condition)
         {
-            if (this.hasWhere) { throw new Exception("One where clause"); }
-
-            this.condition = condition;
-            this.hasWhere = true;
+            if (this.hasCondition) { throw new Exception("One clause where"); }
+            this.condition = new ConditionAndParameterContainer(condition);
+            this.hasCondition = true;
             return this;
         }
 
-        public string Build()
+        public string GetQuery()
         {
-            return this.queryBuilderService.GetDeleteFromString(this.table, this.condition);
+            return this.queryService.GetDelete(this.tableName, this.condition);
         }
 
         public async Task<int> NonQueryAsync()
         {
-            var sql = this.Build();
-            return await this.easyDbInstance.CreateCommand(sql)
-                .NonQueryAsync();
+            var query = this.GetQuery();
+
+            var command = this.easyDbInstance.CreateCommand(query);
+
+            if (this.hasCondition)
+            {
+                command.AddParameter(this.condition.Main.ParameterName, this.condition.Main.ParameterValue);
+
+                if (this.condition.HasConditions())
+                {
+                    foreach (var subCondittion in this.condition.SubConditions)
+                    {
+                        if (subCondittion.IsConditionOp)
+                        {
+                            command.AddParameter(subCondittion.ParameterName, subCondittion.ParameterValue);
+                        }
+                    }
+                }
+            }
+
+          return await command.NonQueryAsync();
         }
+
     }
 }

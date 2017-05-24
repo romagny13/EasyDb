@@ -58,6 +58,11 @@ namespace EasyDbLib
             propertyInfo.SetValue(model, convertedValue);
         }
 
+        public object GetValue(object model, PropertyInfo propertyInfo)
+        {
+            return propertyInfo.GetValue(model);
+        }
+
         public void CheckAndSetValue(object model, string expectedPropertyName, PropertyInfo propertyInfo, object columnValue)
         {
             if (propertyInfo != null)
@@ -71,11 +76,11 @@ namespace EasyDbLib
             }
         }
 
-        public void ResolveProperty(object model, string columnName, object columnValue, Mapping mapping = null)
+        public void ResolveProperty(object model, string columnName, object columnValue, Table mapping = null)
         {
-            if (mapping!= null && mapping.Has(columnName))
+            if (mapping!= null && mapping.HasColumn(columnName))
             {
-                var columnMapping = mapping.Get(columnName);
+                var columnMapping = mapping.GetColumn(columnName);
                 if (!columnMapping.Ignore)
                 {
                     var propertyInfo = this.GetPropertyInfo(model.GetType(), columnMapping.PropertyName);
@@ -89,7 +94,7 @@ namespace EasyDbLib
             }
         }
 
-        public object Resolve(Type modelType, IReaderContainer reader, Mapping mapping = null)
+        public object Resolve(Type modelType, IReaderContainer reader, Table mapping = null)
         {
             var model = this.CreateModelInstance(modelType);
             for (int i = 0; i < reader.FieldCount; i++)

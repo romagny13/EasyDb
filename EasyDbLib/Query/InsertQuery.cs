@@ -1,30 +1,24 @@
 ﻿using System;
-
+using System.Threading.Tasks;
 
 namespace EasyDbLib
-{ 
+{
     public class InsertQuery
     {
-        protected IQueryBuilderService queryBuilderService;
-
+        protected IQueryService queryService;
+        protected EasyDb easyDbInstance;
         protected string table;
         protected string[] columns;
         protected object[] values;
-        protected bool hasColumns = false;
-        protected bool hasValues = false;
-        private EasyDb easyDbInstance;
+        protected bool hasColumns;
+        protected bool hasValues;
 
-        public InsertQuery(string table, EasyDb easyDbInstance)
-            :this(new QueryBuilderService(), table, easyDbInstance)
-        { }
-
-        public InsertQuery(IQueryBuilderService queryBuilderService, string table, EasyDb easyDbInstance)
+        public InsertQuery(IQueryService queryService, EasyDb easyDbInstance, string table)
         {
-            this.queryBuilderService = queryBuilderService;
-            this.table = table;
+            this.queryService = queryService;
             this.easyDbInstance = easyDbInstance;
+            this.table = table;
         }
-
 
         public InsertQuery Columns(params string[] columns)
         {
@@ -42,23 +36,55 @@ namespace EasyDbLib
             return this;
         }
 
-        public string build()
+        public string GetQuery(bool lastInsertedId = true)
         {
-            if (!this.hasColumns) {  throw new Exception("No columns provided");}
-            //if (!this.hasValues) { throw new Exception("No values provided"); }
-
-            return this.queryBuilderService.GetInsertIntoString(this.table, this.columns);
+            if (!this.hasColumns) { throw new Exception("No columns provided"); }
+            return this.queryService.GetInsertInto(this.table, this.columns, lastInsertedId);
         }
 
 
-        //public InsertQuery execute(array values= null)
-        //{
-        //    if (!isset(values) && count(this.table_values) === 0) { throw new Exception("No values provided"); }
+        protected EasyDbCommand CreateCommand()
+        {
+            var query = this.GetQuery();
 
-        //    // build la request
-        //    queryString = this.build();
+            if (!this.hasValues) { throw new Exception("No values provided"); }
+            if (this.columns.Length != this.values.Length) { throw new Exception("Not same number of columns and values"); }
+            var command = this.easyDbInstance.CreateCommand(query);
 
-        //    return Db::getInstance().prepare(queryString).execute(values);
-        //}
+            for (int i = 0; i < this.columns.Length; i++)
+            {
+                var parameterName = this.queryService.GetParameterName(this.columns[i]);
+                command.AddParameter(parameterName, this.values[i]);
+            }
+            return command;
+        }
+
+        public async Task<T> LastInsertedId<T>()
+        {
+            var command = this.CreateCommand();
+            return (T)await command.ScalarAsync();
+        }
+
+        public async Task<int> NonQueryAsync()
+        {
+            var command = this.CreateCommand();
+            return await command.NonQueryAsync();
+        }
+
+        public async Task<TModel> Fetch<TModel>(Table mapping) where TModel : new()
+        {
+            var command = this.CreateCommand();
+            var lastInserted = await command.ScalarAsync();
+
+
+            var primaryKeys = mapping.GetPrimaryKeys();
+            if (primaryKeys.Length == 0) { throw new Exception("No primary keys provided in the mapping"); }
+            if (primaryKeys.Length > 1) { throw new Exception("Multiple primary keys not supported for this method"); }
+
+            return await this.easyDbInstance
+                  .Select<TModel>(mapping)
+                  .Where(Condition.Op(primaryKeys[0].ColumnName, lastInserted))
+                  .ReadOneAsync();
+        }
     }
 }

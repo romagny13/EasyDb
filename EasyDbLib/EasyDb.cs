@@ -19,18 +19,26 @@ namespace EasyDbLib
         public static EasyDb Default => Singleton<EasyDb>.Instance;
 
         protected DbConnection connection;
+
         public ConnectionStrategy ConnectionStrategy { get; protected set; }
+        public IQueryService queryService;
         public string ConnectionString { get; protected set; }
         public string ProviderName { get; protected set; }
-        protected QueryBuilder queryBuilder;
 
         public EasyDb()
         {
             this.onError = new List<EventHandler<EasyDbErrorEventArgs>>();
-            this.queryBuilder = new QueryBuilder(this);
         }
 
-        public EasyDb GetNewConnection(string connectionString, string providerName, 
+        public EasyDb SetQueryService(string providerName, IQueryService queryService)
+        {
+            QueryServiceFactory.Set(providerName, queryService);
+            this.queryService = QueryServiceFactory.Get(providerName);
+            return this;
+        }
+
+
+        public EasyDb SetConnectionSettings(string connectionString, string providerName, 
             ConnectionStrategy connectionStrategy = ConnectionStrategy.Default)
         {
             var connection = DbProviderFactories.GetFactory(providerName).CreateConnection();
@@ -43,19 +51,21 @@ namespace EasyDbLib
             this.connection = connection;
             this.ConnectionStrategy = connectionStrategy;
 
+            this.queryService = QueryServiceFactory.Get(this.ProviderName);
+
             return this;
         }
 
-        public EasyDb GetNewConnection(string connectionStringName = "Default", 
+        public EasyDb SetConnectionSettings(string connectionStringName = "Default", 
             ConnectionStrategy connectionStrategy = ConnectionStrategy.Default)
         {
             var section = ConfigurationManager.ConnectionStrings[connectionStringName];
-            if (section == null) { throw new Exception("No section foor the connection string name " + connectionStringName + " in the configuration file."); }
+            if (section == null) { throw new Exception("No section found for the connection string name " + connectionStringName + " in the configuration file."); }
 
-            return this.GetNewConnection(section.ConnectionString, section.ProviderName);
+            return this.SetConnectionSettings(section.ConnectionString, section.ProviderName);
         }
 
-        public EasyDb ChangeConnectionStrategy(ConnectionStrategy connectionStrategy)
+        public EasyDb SetConnectionStrategy(ConnectionStrategy connectionStrategy)
         {
             this.ConnectionStrategy = connectionStrategy;
             return this;
@@ -111,7 +121,36 @@ namespace EasyDbLib
             return new EasyDbCommand(this, command, commandText, commandType);
         }
 
-        public void HandleException(Exception e, When when, DbCommand command = null)
+        public EasyDbCommand CreateCommand(string sql)
+        {
+            return this.CreateCommand(sql, CommandType.Text);
+        }
+
+        public EasyDbCommand CreateStoredProcedureCommand(string procedureName)
+        {
+            return this.CreateCommand(procedureName, CommandType.StoredProcedure);
+        }
+
+        public SelectQuery<T> Select<T>(Table mapping) where T:new()
+        {
+            return new SelectQuery<T>(this.queryService, this, typeof(T), mapping);
+        }
+
+        public InsertQuery InsertInto(string tableName)
+        {
+            return new InsertQuery(this.queryService, this, tableName);
+        }
+
+        public UpdateQuery Update(string tableName)
+        {
+            return new UpdateQuery(this.queryService, this, tableName);
+        }
+
+        public DeleteQuery DeleteFrom(string tableName) { 
+            return new DeleteQuery(this.queryService, this, tableName);
+        }
+
+        internal void HandleException(Exception e, When when, DbCommand command = null)
         {
             if (this.onError.Count > 0)
             {
@@ -125,36 +164,6 @@ namespace EasyDbLib
             {
                 throw e;
             }
-        }
-
-        public EasyDbCommand CreateCommand(string sql)
-        {
-            return this.CreateCommand(sql, CommandType.Text);
-        }
-
-        public EasyDbCommand CreateStoredProcedureCommand(string procedureName)
-        {
-            return this.CreateCommand(procedureName, CommandType.StoredProcedure);
-        }
-
-        public SelectQuery Select(params string[] columns)
-        {
-            return this.queryBuilder.Select(columns);
-        }
-
-        public InsertQuery InsertInto(string table)
-        {
-            return this.queryBuilder.InsertInto(table);
-        }
-
-        public UpdateQuery Update(string table)
-        {
-            return this.queryBuilder.Update(table);
-        }
-
-        public DeleteQuery DeleteFrom(string table)
-        {
-            return this.queryBuilder.DeleteFrom(table);
         }
     }
 }

@@ -41,31 +41,38 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Mapping\ColumnMapping.cs" />
-    <Compile Include="Conditions\Condition.cs" />
-    <Compile Include="Conditions\ConditionBetween.cs" />
-    <Compile Include="Conditions\ConditionLike.cs" />
-    <Compile Include="Conditions\ConditionOp.cs" />
+    <Compile Include="IModelResolver.cs" />
+    <Compile Include="Mapping\Column.cs" />
+    <Compile Include="Mapping\ForeignKeyColumn.cs" />
+    <Compile Include="Mapping\Mapping.cs" />
+    <Compile Include="Mapping\PrimaryKeyColumn.cs" />
+    <Compile Include="Mapping\Table.cs" />
     <Compile Include="ConnectionStrategy.cs" />
     <Compile Include="EasyDb.cs" />
     <Compile Include="EasyDbCommand.cs" />
-    <Compile Include="IModelResolver.cs" />
     <Compile Include="IReaderContainer.cs" />
-    <Compile Include="Mapping\Mapping.cs" />
-    <Compile Include="Mapping\MappingContainer.cs" />
     <Compile Include="ModelResolver.cs" />
     <Compile Include="EasyDbErrorEventArgs.cs" />
-    <Compile Include="Conditions\OrderedCondition.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Query\DeleteQuery.cs" />
     <Compile Include="Query\InsertQuery.cs" />
-    <Compile Include="Query\IQueryBuilderService.cs" />
-    <Compile Include="Query\QueryBuilder.cs" />
-    <Compile Include="Query\QueryBuilderService.cs" />
+    <Compile Include="Query\QueryServiceFactory.cs" />
+    <Compile Include="Query\ConditionAndParameterContainer.cs" />
+    <Compile Include="Query\Conditions\Condition.cs" />
+    <Compile Include="Query\Conditions\ConditionBetween.cs" />
+    <Compile Include="Query\Conditions\ConditionLike.cs" />
+    <Compile Include="Query\Conditions\ConditionNull.cs" />
+    <Compile Include="Query\Conditions\ConditionOp.cs" />
+    <Compile Include="Query\Conditions\OrderedCondition.cs" />
+    <Compile Include="Query\IQueryService.cs" />
+    <Compile Include="Query\ConditionAndParameter.cs" />
+    <Compile Include="Query\IRelation.cs" />
+    <Compile Include="Query\ManyRelation.cs" />
+    <Compile Include="Query\OneRelation.cs" />
     <Compile Include="Query\SelectQuery.cs" />
+    <Compile Include="Query\QueryService.cs" />
     <Compile Include="Query\UpdateQuery.cs" />
     <Compile Include="Singleton.cs" />
-    <Compile Include="Sort.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

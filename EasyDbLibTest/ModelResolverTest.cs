@@ -250,14 +250,14 @@ namespace EasyDbLibTest
         public void TestResolveProperty_WithMapping()
         {
             var resolver = new ModelResolver();
-            var mapping = new Mapping();
-            mapping.Add("id", "Id")
-                .Add("first", "FirstName");
 
-            var model = (MyModelMapped) resolver.CreateModelInstance(typeof(MyModelMapped));
+            Mapping.AddTable("users").AddColumn("id", "Id")
+                .AddColumn("first", "FirstName");
+
+            var model = (MyModelMapped)resolver.CreateModelInstance(typeof(MyModelMapped));
 
 
-            resolver.ResolveProperty(model, "first", "Marie", mapping);
+            resolver.ResolveProperty(model, "first", "Marie", Mapping.GetTable("users"));
 
             Assert.AreEqual("Marie", model.FirstName);
         }
@@ -266,14 +266,14 @@ namespace EasyDbLibTest
         public void TestResolveProperty_WithMappingConvertStringToInt()
         {
             var resolver = new ModelResolver();
-            var mapping = new Mapping();
-            mapping.Add("id", "Id")
-                .Add("first", "FirstName");
 
-            var model = (MyModelMapped) resolver.CreateModelInstance(typeof(MyModelMapped));
+            Mapping.AddTable("users").AddColumn("id", "Id")
+                .AddColumn("first", "FirstName");
+
+            var model = (MyModelMapped)resolver.CreateModelInstance(typeof(MyModelMapped));
 
 
-            resolver.ResolveProperty(model, "id", "10", mapping);
+            resolver.ResolveProperty(model, "id", "10", Mapping.GetTable("users"));
 
             Assert.AreEqual(10, model.Id);
         }
@@ -282,14 +282,14 @@ namespace EasyDbLibTest
         public void TestResolveProperty_WithMappingConvertIntToString()
         {
             var resolver = new ModelResolver();
-            var mapping = new Mapping();
-            mapping.Add("id", "Id")
-                .Add("first", "FirstName");
 
-            var model = (MyModelMapped) resolver.CreateModelInstance(typeof(MyModelMapped));
+            Mapping.AddTable("users").AddColumn("id", "Id")
+                .AddColumn("first", "FirstName");
+
+            var model = (MyModelMapped)resolver.CreateModelInstance(typeof(MyModelMapped));
 
 
-            resolver.ResolveProperty(model, "first", 10, mapping);
+            resolver.ResolveProperty(model, "first", 10, Mapping.GetTable("users"));
 
             Assert.AreEqual("10", model.FirstName);
         }
@@ -298,14 +298,14 @@ namespace EasyDbLibTest
         public void TestColumnIsIgnored()
         {
             var resolver = new ModelResolver();
-            var mapping = new Mapping();
-            mapping.Add("id", "Id")
-                .Add("first", "FirstName", true);
+
+            Mapping.AddTable("users").AddColumn("id", "Id")
+                .AddColumn("first", "FirstName", true);
 
             var model = (MyModelMapped)resolver.CreateModelInstance(typeof(MyModelMapped));
 
 
-            resolver.ResolveProperty(model, "first", "Marie", mapping);
+            resolver.ResolveProperty(model, "first", "Marie", Mapping.GetTable("users"));
 
             Assert.AreEqual(null, model.FirstName);
         }
@@ -314,13 +314,13 @@ namespace EasyDbLibTest
         public void TestColumnIsIgnoredWIthInt()
         {
             var resolver = new ModelResolver();
-            var mapping = new Mapping();
-            mapping.Add("id", "Id", true)
-                .Add("first", "FirstName");
+
+            Mapping.AddTable("users").AddColumn("id", "Id",true)
+                .AddColumn("first", "FirstName");
 
             var model = (MyModelMapped)resolver.CreateModelInstance(typeof(MyModelMapped));
 
-            resolver.ResolveProperty(model, "id", 10, mapping);
+            resolver.ResolveProperty(model, "id", 10,Mapping.GetTable("users"));
 
             Assert.AreEqual(default(int), model.Id);
         }
@@ -329,17 +329,17 @@ namespace EasyDbLibTest
         public void TestColumnDontIgnoredWOtherColumns()
         {
             var resolver = new ModelResolver();
-            var mapping = new Mapping();
-            mapping.Add("id", "Id", true)
-                .Add("first", "FirstName");
+
+            Mapping.AddTable("users").AddColumn("id", "Id", true)
+                .AddColumn("first", "FirstName");
 
             var model = (MyModelMapped)resolver.CreateModelInstance(typeof(MyModelMapped));
 
-            resolver.ResolveProperty(model, "id", 10, mapping);
+            resolver.ResolveProperty(model, "id", 10, Mapping.GetTable("users"));
 
             Assert.AreEqual(default(int), model.Id);
 
-            resolver.ResolveProperty(model, "first", "Marie", mapping);
+            resolver.ResolveProperty(model, "first", "Marie", Mapping.GetTable("users"));
 
             Assert.AreEqual("Marie", model.FirstName);
 
@@ -349,19 +349,19 @@ namespace EasyDbLibTest
         public void TestColumnCouldChangeIgnored()
         {
             var resolver = new ModelResolver();
-            var mapping = new Mapping();
-            mapping.Add("id", "Id")
-                .Add("first", "FirstName", true);
+
+            Mapping.AddTable("users").AddColumn("id", "Id")
+                .AddColumn("first", "FirstName", true);
 
             var model = (MyModelMapped)resolver.CreateModelInstance(typeof(MyModelMapped));
 
-            resolver.ResolveProperty(model, "first", "Marie", mapping);
+            resolver.ResolveProperty(model, "first", "Marie", Mapping.GetTable("users"));
 
             Assert.AreEqual(null, model.FirstName);
 
-            mapping.Get("first").Ignore = false;
+            Mapping.GetTable("users").GetColumn("first").Ignore = false;
 
-            resolver.ResolveProperty(model, "first", "Marie", mapping);
+            resolver.ResolveProperty(model, "first", "Marie", Mapping.GetTable("users"));
 
             Assert.AreEqual("Marie", model.FirstName);
         }
@@ -432,11 +432,11 @@ namespace EasyDbLibTest
             };
             var reader = new MyReaderContainer(data);
 
-            var mapping = new Mapping();
-            mapping.Add("id", "Id")
-                .Add("first", "FirstName");
+            Mapping.AddTable("users")
+                .AddColumn("id", "Id")
+                .AddColumn("first", "FirstName");
 
-            var result = (FakeModelMapped)resolver.Resolve(typeof(FakeModelMapped), reader,mapping);
+            var result = (FakeModelMapped)resolver.Resolve(typeof(FakeModelMapped), reader, Mapping.GetTable("users"));
 
             Assert.AreEqual(1, result.Id);
             Assert.AreEqual("Marie", result.FirstName);

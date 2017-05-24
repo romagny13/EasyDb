@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data.Common;
 using System.Threading.Tasks;
 using EasyDbLib;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Data;
 
 namespace EasyDbLibTest
 {
@@ -45,7 +47,7 @@ namespace EasyDbLibTest
         public async Task TestGetNewConnection()
         {
             var db = new EasyDb();
-            await db.GetNewConnection(sqlServerConnectionString, sqlServerProviderName)
+            await db.SetConnectionSettings(sqlServerConnectionString, sqlServerProviderName)
                 .OpenAsync();
 
             Assert.IsTrue(db.IsOpen());
@@ -55,7 +57,7 @@ namespace EasyDbLibTest
         public async Task TestGetNewConnectionFromConfigFile_WithDefault()
         {
             var db = new EasyDb();
-            await db.GetNewConnection()
+            await db.SetConnectionSettings()
                 .OpenAsync();
 
             Assert.IsTrue(db.IsOpen());
@@ -65,7 +67,7 @@ namespace EasyDbLibTest
         public async Task TestGetNewConnectionFromConfigFile_WithNamed()
         {
             var db = new EasyDb();
-            await db.GetNewConnection("MyConnection")
+            await db.SetConnectionSettings("MyConnection")
                 .OpenAsync();
 
             Assert.IsTrue(db.IsOpen());
@@ -77,7 +79,7 @@ namespace EasyDbLibTest
         public async Task TestClose()
         {
             var db = new EasyDb();
-            await db.GetNewConnection(sqlServerConnectionString, sqlServerProviderName)
+            await db.SetConnectionSettings(sqlServerConnectionString, sqlServerProviderName)
                 .OpenAsync();
 
             Assert.IsTrue(db.IsOpen());
@@ -94,7 +96,7 @@ namespace EasyDbLibTest
         public async Task TestReadOneAsync_PropertyNotInTableAreIgnored()
         {
             var db = new EasyDb();
-            db.GetNewConnection(sqlServerConnectionString, sqlServerProviderName);
+            db.SetConnectionSettings(sqlServerConnectionString, sqlServerProviderName);
 
             var result = await db.CreateCommand("select * from users where id=@id")
                 .AddParameter("@id", 11)
@@ -108,10 +110,62 @@ namespace EasyDbLibTest
         }
 
         [TestMethod]
+        public async Task TestReadOneAsync_WithDbType()
+        {
+            var db = new EasyDb();
+            db.SetConnectionSettings(sqlServerConnectionString, sqlServerProviderName);
+
+            var result = await db.CreateCommand("select * from users where id=@id")
+                .AddParameter("@id", 11, DbType.Int16)
+                .ReadOneAsync<UserWithIgnoredProperty>();
+
+            Assert.AreEqual(null, result.Age);
+            Assert.AreEqual(11, result.Id);
+            Assert.AreEqual("Marie", result.Name);
+            Assert.AreEqual("marie@mail.com", result.Email);
+            Assert.AreEqual(null, result.MyIgnoredProperty);
+        }
+
+
+        [TestMethod]
+        public async Task TestReadOneAsync_WithInvalidDbType_Fail()
+        {
+            bool failed = false;
+            var db = new EasyDb();
+            db.SetConnectionSettings(sqlServerConnectionString, sqlServerProviderName);
+
+            try
+            {
+                var result = await db.CreateCommand("select * from users where id=@id")
+               .AddParameter("@id", 11, DbType.Date)
+               .ReadOneAsync<UserWithIgnoredProperty>();
+            }
+            catch (Exception)
+            {
+                failed = true;
+            }
+
+            Assert.IsTrue(failed);
+        }
+
+        [TestMethod]
+        public async Task TestReadOneNotExist_RetrunsNull()
+        {
+            var db = new EasyDb();
+            db.SetConnectionSettings(sqlServerConnectionString, sqlServerProviderName);
+
+            var result = await db.CreateCommand("select * from users where id=@id")
+                .AddParameter("@id", 100)
+                .ReadOneAsync<UserWithIgnoredProperty>();
+
+            Assert.IsNull(result);
+        }
+
+        [TestMethod]
         public async Task TestReadOneAsync_ColumnNotInClassIsIgnored()
         {
             var db = new EasyDb();
-            db.GetNewConnection(sqlServerConnectionString, sqlServerProviderName);
+            db.SetConnectionSettings(sqlServerConnectionString, sqlServerProviderName);
 
             var result = await db.CreateCommand("select * from users where id=@id")
                 .AddParameter("@id", 11)
@@ -125,7 +179,7 @@ namespace EasyDbLibTest
         public async Task TestReadOneAsync_WithNullableAndDbNull_ReturnsValuesAndNull()
         {
             var db = new EasyDb();
-            db.GetNewConnection(sqlServerConnectionString, sqlServerProviderName);
+            db.SetConnectionSettings(sqlServerConnectionString, sqlServerProviderName);
 
             var result = await db.CreateCommand("select * from users where id=@id")
                 .AddParameter("@id", 11)
@@ -141,7 +195,7 @@ namespace EasyDbLibTest
         public async Task TestReadOneAsync_WithNullableAndNotDbNull_ReturnsValues()
         {
             var db = new EasyDb();
-            db.GetNewConnection(sqlServerConnectionString, sqlServerProviderName);
+            db.SetConnectionSettings(sqlServerConnectionString, sqlServerProviderName);
 
             var result = await db.CreateCommand("select * from users where id=@id")
                 .AddParameter("@id", 12)
@@ -157,7 +211,7 @@ namespace EasyDbLibTest
         public async Task TestReadOneAsync_ConnectionIsClosed()
         {
             var db = new EasyDb();
-            db.GetNewConnection(sqlServerConnectionString, sqlServerProviderName);
+            db.SetConnectionSettings(sqlServerConnectionString, sqlServerProviderName);
 
             var result = await db.CreateCommand("select * from users where id=@id")
                 .AddParameter("@id", 12)
@@ -166,7 +220,6 @@ namespace EasyDbLibTest
             Assert.IsTrue(db.IsClosed());
         }
 
-       
 
         // read all
 
@@ -174,10 +227,11 @@ namespace EasyDbLibTest
         public async Task TestReadAllAsync()
         {
             var db = new EasyDb();
-            db.GetNewConnection(sqlServerConnectionString, sqlServerProviderName);
+            db.SetConnectionSettings(sqlServerConnectionString, sqlServerProviderName);
 
-            var result = await db.CreateCommand("select * from users")
-                 .ReadAllAsync<User>();
+            var result = await db
+                .CreateCommand("select * from users")
+                .ReadAllAsync<User>();
 
             Assert.AreEqual(2, result.Count);
 
@@ -196,7 +250,7 @@ namespace EasyDbLibTest
         public async Task TestReadAllAsync_ConnectionIsClosed()
         {
             var db = new EasyDb();
-            db.GetNewConnection(sqlServerConnectionString, sqlServerProviderName);
+            db.SetConnectionSettings(sqlServerConnectionString, sqlServerProviderName);
 
             var result = await db.CreateCommand("select * from users")
                 .ReadAllAsync<User>();
@@ -210,7 +264,7 @@ namespace EasyDbLibTest
         public async Task TestNonQueryAsyncWithStringNull()
         {
             var db = new EasyDb();
-            db.GetNewConnection(sqlServerConnectionString, sqlServerProviderName);
+            db.SetConnectionSettings(sqlServerConnectionString, sqlServerProviderName);
 
             var user = new P
             {
@@ -247,7 +301,7 @@ namespace EasyDbLibTest
         public async Task TestScalarAsync()
         {
             var db = new EasyDb();
-            db.GetNewConnection(sqlServerConnectionString, sqlServerProviderName);
+            db.SetConnectionSettings(sqlServerConnectionString, sqlServerProviderName);
 
 
             var user = new P
@@ -286,7 +340,7 @@ namespace EasyDbLibTest
             bool isCalled = false;
             EasyDbErrorEventArgs ex = null;
             var db = new EasyDb();
-            db.GetNewConnection(@"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=C:\file\not\found.mdf;Integrated Security=True;Connect Timeout=20", sqlServerProviderName);
+            db.SetConnectionSettings(@"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=C:\file\not\found.mdf;Integrated Security=True;Connect Timeout=20", sqlServerProviderName);
 
             db.OnError += (sender, e) =>
             {
@@ -309,7 +363,7 @@ namespace EasyDbLibTest
             bool isCalled = false;
             EasyDbErrorEventArgs ex = null;
             var db = new EasyDb();
-            db.GetNewConnection(sqlServerConnectionString, sqlServerProviderName);
+            db.SetConnectionSettings(sqlServerConnectionString, sqlServerProviderName);
 
             db.OnError += (sender, e) =>
             {
@@ -335,7 +389,7 @@ namespace EasyDbLibTest
             bool isCalled = false;
             EasyDbErrorEventArgs ex = null;
             var db = new EasyDb();
-            db.GetNewConnection(sqlServerConnectionString, sqlServerProviderName);
+            db.SetConnectionSettings(sqlServerConnectionString, sqlServerProviderName);
 
             db.OnError += (sender, e) =>
             {
@@ -360,7 +414,7 @@ namespace EasyDbLibTest
             bool isCalled = false;
             EasyDbErrorEventArgs ex = null;
             var db = new EasyDb();
-            db.GetNewConnection(sqlServerConnectionString, sqlServerProviderName);
+            db.SetConnectionSettings(sqlServerConnectionString, sqlServerProviderName);
 
             db.OnError += (sender, e) =>
             {
@@ -386,7 +440,7 @@ namespace EasyDbLibTest
             bool isCalled = false;
             EasyDbErrorEventArgs ex = null;
             var db = new EasyDb();
-            db.GetNewConnection(sqlServerConnectionString, sqlServerProviderName);
+            db.SetConnectionSettings(sqlServerConnectionString, sqlServerProviderName);
 
             db.OnError += (sender, e) =>
             {
@@ -411,7 +465,7 @@ namespace EasyDbLibTest
         {
             bool failed = false;
             var db = new EasyDb();
-            db.GetNewConnection(sqlServerConnectionString, sqlServerProviderName);
+            db.SetConnectionSettings(sqlServerConnectionString, sqlServerProviderName);
 
             try
             {
@@ -435,7 +489,7 @@ namespace EasyDbLibTest
         {
             bool failed = false;
             var db = new EasyDb();
-            db.GetNewConnection(sqlServerConnectionString, sqlServerProviderName, ConnectionStrategy.Manual);
+            db.SetConnectionSettings(sqlServerConnectionString, sqlServerProviderName, ConnectionStrategy.Manual);
 
             try
             {
@@ -455,7 +509,7 @@ namespace EasyDbLibTest
         public async Task TestWithManualStrategy_DontCloseConnection()
         {
             var db = new EasyDb();
-            db.GetNewConnection(sqlServerConnectionString, sqlServerProviderName, ConnectionStrategy.Manual);
+            db.SetConnectionSettings(sqlServerConnectionString, sqlServerProviderName, ConnectionStrategy.Manual);
 
            await db.OpenAsync();
 
@@ -468,7 +522,7 @@ namespace EasyDbLibTest
         public async Task TestWitDefaultStrategy_OpenAndClose()
         {
             var db = new EasyDb();
-            db.GetNewConnection(sqlServerConnectionString, sqlServerProviderName);
+            db.SetConnectionSettings(sqlServerConnectionString, sqlServerProviderName);
 
             var result = await db.CreateCommand("select * from users where id=@id")
                 .AddParameter("@id", 11)
@@ -481,7 +535,7 @@ namespace EasyDbLibTest
         public async Task TestCouldChangeStrategy()
         {
             var db = new EasyDb();
-            db.GetNewConnection(sqlServerConnectionString, sqlServerProviderName,ConnectionStrategy.Manual);
+            db.SetConnectionSettings(sqlServerConnectionString, sqlServerProviderName,ConnectionStrategy.Manual);
 
             await db.OpenAsync();
 
@@ -491,7 +545,7 @@ namespace EasyDbLibTest
 
             db.Close();
 
-            db.ChangeConnectionStrategy(ConnectionStrategy.Default);
+            db.SetConnectionStrategy(ConnectionStrategy.Default);
 
             result = await db.CreateCommand("select * from users where id=@id")
                 .AddParameter("@id", 11)
@@ -504,7 +558,7 @@ namespace EasyDbLibTest
         public async Task TestDontOpen_IfConnectionIsOpened()
         {
             var db = new EasyDb();
-            db.GetNewConnection(sqlServerConnectionString, sqlServerProviderName);
+            db.SetConnectionSettings(sqlServerConnectionString, sqlServerProviderName);
 
             await db.OpenAsync();
 
@@ -521,7 +575,7 @@ namespace EasyDbLibTest
         public async Task TestCreateStoredProcedure()
         {
             var db = new EasyDb();
-            db.GetNewConnection(sqlServerConnectionString, sqlServerProviderName);
+            db.SetConnectionSettings(sqlServerConnectionString, sqlServerProviderName);
 
             var result = await db.CreateStoredProcedureCommand("GetUser")
                 .AddParameter("@id", 11)
@@ -530,38 +584,35 @@ namespace EasyDbLibTest
             Assert.AreEqual("Marie", result.Name);
             Assert.AreEqual("marie@mail.com", result.Email);
         }
+
+        // factory
+
+
+        //[TestMethod]
+        //public void TestCustomFactory_ReturnsBackTick()
+        //{
+        //    var db = new EasyDb();
+
+        //    db.SetQueryService(sqlServerProviderName, new MyCustomQueryService())
+        //        .SetConnectionSettings(sqlServerConnectionString, sqlServerProviderName);
+
+
+        //    Mapping.AddTable("posts")
+        //          .AddPrimaryKeyColumn("id", "Id")
+        //          .AddColumn("title", "Title")
+        //          .AddColumn("content", "Content");
+
+        //    var result = db.Select<Post>(Mapping.GetTable("posts"))
+        //        .Where(Condition.Op("id", 1))
+        //        .GetQuery();
+
+
+        //    Assert.AreEqual("select `id`,`title`,`content` from `posts` where `id`=@id", result);
+
+        //    db.SetQueryService(sqlServerProviderName, new QueryService());
+        //}
     }
 
-    public class P
-    {
-        public int id { get; set; }
-        public string first { get; set; }
-        public string last { get; set; }
-        public string email { get; set; }
-        public int? age { get; set; }
-    }
-
-    public class User
-    {
-        public int Id { get; set; }
-        public string Name { get; set; }
-        public string Email { get; set; }
-        public int? Age { get; set; }
-    }
-
-    public class UserWithIgnoredProperty
-    {
-        public int Id { get; set; }
-        public string Name { get; set; }
-        public string Email { get; set; }
-        public int? Age { get; set; }
-        public string MyIgnoredProperty { get; set; }
-    }
-
-    public class UserWithIgnoredColumns
-    {
-        public int Id { get; set; }
-        public string Name { get; set; }
-    }
+   
 
 }

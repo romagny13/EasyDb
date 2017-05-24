@@ -12,7 +12,12 @@ namespace EasyDbLib
         protected EasyDb easyDbInstance;
         protected DbCommand command;
 
-        public EasyDbCommand(IModelResolver modelResolver, EasyDb easyDbInstance, DbCommand command, string commandText, CommandType commandType)
+        public EasyDbCommand(
+            IModelResolver modelResolver, 
+            EasyDb easyDbInstance, 
+            DbCommand command, 
+            string commandText, 
+            CommandType commandType)
         {
             this.modelResolver = modelResolver;
             this.easyDbInstance = easyDbInstance;
@@ -75,7 +80,7 @@ namespace EasyDbLib
             }
         }
 
-        public async Task<List<T>> ReadAllAsync<T>(Mapping mapping = null)
+        public async Task<List<T>> ReadAllAsync<T>(Table mapping = null)
         {
             var result = new List<T>();
 
@@ -103,7 +108,7 @@ namespace EasyDbLib
             return result;
         }
 
-        public async Task<T> ReadOneAsync<T>(Mapping mapping = null)
+        public async Task<T> ReadOneAsync<T>(Table mapping = null)
         {
             try
             {
@@ -124,12 +129,11 @@ namespace EasyDbLib
             }
             catch (Exception e)
             {
-               this.easyDbInstance.HandleException(e,When.ReadOne, this.command);
+                this.easyDbInstance.HandleException(e, When.ReadOne, this.command);
             }
-           
+
             return default(T);
         }
-
 
         public async Task<int> NonQueryAsync()
         {

@@ -1,101 +1,186 @@
-using System;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace EasyDbLib
 {
-    public class SelectQuery
+
+    public class SelectQuery<T> where T : new()
     {
-        protected IQueryBuilderService queryBuilderService;
+        protected IQueryService queryService;
+        protected IModelResolver modelResolver;
+        protected EasyDb easyDbInstance;
+        protected Type modelType;
+        protected Table modelMapping;
+        protected int? limit;
+        protected ConditionAndParameterContainer condition;
+        protected string[] statements;
+        protected string[] sorts;
+        protected bool hasSorts;
+        protected bool hasCondition;
+        protected bool hasStatements;
+        protected bool hasOneRelations;
+        protected bool hasManyRelations;
+        protected Dictionary<Type,IRelation> oneRelations;
+        private Dictionary<Type,IRelation> manyRelations;
 
-        protected string[] columns; // select
-        protected string[] statements; // distinct
-        protected string[] tables; // from
-        protected Condition condition; // where
-        protected int? top; // limit
-        protected string[] sorts; // order by
 
-        protected bool hasOptions = false;
-        protected bool hasFrom = false;
-        protected bool hasWhere = false;
-        protected bool hasLimit = false;
-        protected bool hasOrderBy = false;
-        private EasyDb easyDbInstance;
-
-        public SelectQuery(string[] columns, EasyDb easyDbInstance)
-            : this(new QueryBuilderService(), columns, easyDbInstance)
+        public SelectQuery(IQueryService queryService, EasyDb easyDbInstance, Type modelType, Table mapping)
+            : this(new ModelResolver(), queryService, easyDbInstance, modelType, mapping)
         { }
 
-        public SelectQuery(IQueryBuilderService queryBuilderService, string[] columns, EasyDb easyDbInstance)
+        public SelectQuery(IModelResolver modelResolver, IQueryService queryService, EasyDb easyDbInstance, Type modelType, Table mapping)
         {
-            this.columns = columns;
-            this.queryBuilderService = queryBuilderService;
-            this.easyDbInstance = easyDbInstance;
+            this.oneRelations = new Dictionary<Type, IRelation>();
+            this.manyRelations = new Dictionary<Type, IRelation>();
             this.statements = new string[] { };
-            this.sorts = new string[] { };
+            this.modelResolver = modelResolver;
+            this.queryService = queryService;
+            this.easyDbInstance = easyDbInstance;
+            this.modelType = modelType;
+            this.modelMapping = mapping;
         }
 
-
-        public SelectQuery Statements(params string[] statements)
+        public SelectQuery<T> Top(int limit)
         {
-            if (this.hasOptions) { throw new Exception("Options already defined"); }
+            this.limit = limit;
+            return this;
+        }
+
+        public SelectQuery<T> Statements(params string[] statements)
+        {
+            if (this.hasStatements) { throw new Exception("Statements already defined"); }
             this.statements = statements;
-            this.hasOptions = true;
+            this.hasStatements = true;
             return this;
         }
 
-        public SelectQuery Top(int value)
+        public SelectQuery<T> Where(Condition condition)
         {
-            if (this.hasLimit) { throw new Exception("One limit clause"); }
-            this.top = value;
-            this.hasLimit = true;
+            if (this.hasCondition) { throw new Exception("One clause where"); }
+            this.condition = new ConditionAndParameterContainer(condition);
+            this.hasCondition = true;
             return this;
         }
 
-        public SelectQuery From(params string[] tables)
+        public SelectQuery<T> OrderBy(params string[] sorts)
         {
-            if (this.hasFrom) { throw new Exception("One from clause"); }
-            this.tables = tables;
-            this.hasFrom = true;
-            return this;
-        }
-
-        public SelectQuery Where(Condition condition)
-        {
-            if (this.hasWhere) { throw new Exception("One where clause"); }
-            this.condition = condition;
-            this.hasWhere = true;
-            return this;
-        }
-
-        public SelectQuery OrderBy(params string[] sorts)
-        {
-            if (this.hasOrderBy) { throw new Exception("One order by clause"); }
+            if (this.hasSorts) { throw new Exception("One clause order by"); }
             this.sorts = sorts;
-            this.hasOrderBy = true;
+            this.hasSorts = true;
             return this;
         }
 
-        public SelectQuery OrderBy(params Sort[] sorts)
+        public SelectQuery<T> HasOne<TRelation>(string propertyToFill, Table relationMapping)
         {
-            if (this.hasOrderBy) { throw new Exception("One order by clause"); }
-            this.sorts = new string[sorts.Length];
-            for (int i = 0; i < sorts.Length; i++)
+            this.oneRelations[typeof(TRelation)] = new OneRelation<TRelation>(this.queryService, this.modelResolver, this.easyDbInstance, propertyToFill, this.modelMapping, relationMapping);
+            this.hasOneRelations = true;
+            return this;
+        }
+
+        public bool HasOneRelation<TRelation>()
+        {
+            return this.oneRelations.ContainsKey(typeof(TRelation));
+        }
+
+        public bool HasManyRelation<TRelation>()
+        {
+            return this.manyRelations.ContainsKey(typeof(TRelation));
+        }
+
+        public IRelation GetOneRelation<TRelation>()
+        {
+            return this.oneRelations[typeof(TRelation)];
+        }
+
+        public IRelation GetManyRelation<TRelation>()
+        {
+            return this.manyRelations[typeof(TRelation)];
+        }
+
+        public SelectQuery<T> HasMany<TRelation>(string propertyListToFill, Table relationMapping)
+        {
+            this.manyRelations[typeof(TRelation)] = new ManyRelation<TRelation>(this.queryService, this.modelResolver, this.easyDbInstance, propertyListToFill, this.modelMapping, relationMapping);
+            this.hasManyRelations = true;
+            return this;
+        }
+
+        public string GetQuery()
+        {
+            return this.queryService.GetSelect(this.statements, this.limit, this.modelMapping)
+                   + this.queryService.GetFrom(this.modelMapping.TableName)
+                   + this.queryService.GetWhere(this.condition)
+                   + this.queryService.GetOrderBy(this.sorts);
+        }
+
+
+        protected EasyDbCommand CreateCommand()
+        {
+            var query = this.GetQuery();
+
+            // get condition unique keys
+            var mainCommand = this.easyDbInstance.CreateCommand(query);
+
+            if (this.hasCondition)
             {
-                var value = sorts[i].Direction == "" ? sorts[i].Column : sorts[i].Column + " " + sorts[i].Direction;
-                this.sorts[i] = value;
+                mainCommand.AddParameter(this.condition.Main.ParameterName, this.condition.Main.ParameterValue);
+
+                if (this.condition.HasConditions())
+                {
+                    foreach (var subCondittion in this.condition.SubConditions)
+                    {
+                        if (subCondittion.IsConditionOp)
+                        {
+                            mainCommand.AddParameter(subCondittion.ParameterName, subCondittion.ParameterValue);
+                        }
+                    }
+                }
             }
-            this.hasOrderBy = true;
-            return this;
+            return mainCommand;
         }
 
-        public string Build()
+   
+        protected async Task FetchModel(T model)
         {
-            if (!this.hasFrom) { throw new Exception("No table(s) provided"); }
-
-            return this.queryBuilderService.GetSelectFromString(this.statements, this.top, this.columns, this.tables)
-                   + this.queryBuilderService.GetWhereString(this.condition)
-                   + this.queryBuilderService.GetOrderByString(this.sorts);
+            if (this.hasOneRelations)
+            {
+                foreach (var relation in this.oneRelations)
+                {
+                    await relation.Value.Fetch(model);
+                }
+            }
+            if (this.hasManyRelations)
+            {
+                foreach (var relation in this.manyRelations)
+                {
+                    await relation.Value.Fetch(model);
+                }
+            }
         }
 
+        public async Task<T> ReadOneAsync()
+        {
+            var mainCommand = this.CreateCommand();
+            var model = await mainCommand.ReadOneAsync<T>(this.modelMapping);
 
+            await this.FetchModel(model);
+
+            return model;
+        }
+
+        public async Task<List<T>> ReadAllAsync()
+        {
+            var mainCommand = this.CreateCommand();
+            var models = await mainCommand.ReadAllAsync<T>(this.modelMapping);
+
+            foreach (var model in models)
+            {
+                await this.FetchModel(model);
+            }
+
+            return models;
+        }
     }
+
+
 }
