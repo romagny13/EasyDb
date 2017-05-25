@@ -13,8 +13,8 @@ namespace EasyDbLibTest.Core
         public static void ClassInit(TestContext context)
         {
             InitDb.CreateDbTest();
+            Mapping.Clear();
         }
-
 
         // read one
 
@@ -37,6 +37,7 @@ namespace EasyDbLibTest.Core
             bool failed = true;
             var db = new EasyDb();
             db.SetConnectionStringSettings(InitDb.SqlConnectionString, InitDb.SqlProviderName, ConnectionStrategy.Manual);
+
 
             try
             {

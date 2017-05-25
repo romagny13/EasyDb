@@ -13,7 +13,9 @@ namespace EasyDbLibTest.Core
         public static void ClassInit(TestContext context)
         {
             InitDb.CreateDbTest();
+            Mapping.Clear();
         }
+
         // read all
 
         [TestMethod]
@@ -48,12 +50,12 @@ namespace EasyDbLibTest.Core
             db.SetConnectionStringSettings(InitDb.SqlConnectionString, InitDb.SqlProviderName);
 
             Mapping
-                .AddTable("users")
-                .AddColumn("id", "Id")
-                .AddColumn("firstname", "FirstName")
-                .AddColumn("lastname", "LastName")
-                .AddColumn("age", "Age")
-                .AddColumn("email", "Email");
+                .SetTable("users")
+                .SetColumn("id", "Id")
+                .SetColumn("firstname", "FirstName")
+                .SetColumn("lastname", "LastName")
+                .SetColumn("age", "Age")
+                .SetColumn("email", "Email");
 
             var user = new User
             {

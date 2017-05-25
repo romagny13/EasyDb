@@ -10,7 +10,7 @@ namespace EasyDbLib
         public List<OrderedConditionAndParameter> SubConditions { get; }
         protected List<string> uniqueParameterNames;
 
-        public ConditionAndParameterContainer(Condition condition)
+        public ConditionAndParameterContainer(Check condition)
         {
             this.SubConditions = new List<OrderedConditionAndParameter>();
             this.uniqueParameterNames = new List<string>();
@@ -36,31 +36,31 @@ namespace EasyDbLib
             this.SubConditions.Add(parameter);
         }
 
-        public object GetValue(Condition condition)
+        public object GetValue(Check condition)
         {
-            if (condition is ConditionOp)
+            if (condition is CheckOp)
             {
-                return ((ConditionOp)condition).Value;
+                return ((CheckOp)condition).Value;
             }
-            else if (condition is ConditionLike)
+            else if (condition is CheckLike)
             {
-                return ((ConditionLike)condition).Value;
+                return ((CheckLike)condition).Value;
             }
             return null;
         }
 
-        public OrderedConditionAndParameter CreateOrderedParameter(Condition condition, string op)
+        public OrderedConditionAndParameter CreateOrderedParameter(Check condition, string op)
         {
-            var isConditionOp = condition.GetType() == typeof(ConditionOp);
+            var isConditionOp = condition.GetType() == typeof(CheckOp);
             var parameterName = isConditionOp ? this.GetUniqueParameterName(condition.Column) : this.GetParameterName(condition.Column);
             var valueString = this.GetValueString(condition, parameterName);
             var parameterValue = this.GetValue(condition);
             return new OrderedConditionAndParameter(condition.Column, parameterName, valueString, parameterValue, isConditionOp,op);
         }
 
-        public ConditionAndParameter CreateParameter(Condition condition)
+        public ConditionAndParameter CreateParameter(Check condition)
         {
-            var isConditionOp = condition.GetType() == typeof(ConditionOp);
+            var isConditionOp = condition.GetType() == typeof(CheckOp);
             var parameterName = isConditionOp ? this.GetUniqueParameterName(condition.Column) : this.GetParameterName(condition.Column);
             var valueString = this.GetValueString(condition, parameterName);
             var parameterValue = this.GetValue(condition);
@@ -83,23 +83,23 @@ namespace EasyDbLib
             }
         }
 
-        public string GetValueString(Condition condition,string parameterName)
+        public string GetValueString(Check condition,string parameterName)
         {
-            if (condition is ConditionOp)
+            if (condition is CheckOp)
             {
-                return this.GetConditionOpValueString(((ConditionOp)condition).Operator, parameterName);
+                return this.GetConditionOpValueString(((CheckOp)condition).Operator, parameterName);
             }
-            else if (condition is ConditionLike)
+            else if (condition is CheckLike)
             {
-                return this.GetConditionLikeValueString(((ConditionLike)condition).Value);
+                return this.GetConditionLikeValueString(((CheckLike)condition).Value);
             }
-            else if (condition is ConditionBetween)
+            else if (condition is CheckBetween)
             {
-                return this.GetConditionBetweenValueString(((ConditionBetween)condition).Value1, ((ConditionBetween)condition).Value2);
+                return this.GetConditionBetweenValueString(((CheckBetween)condition).Value1, ((CheckBetween)condition).Value2);
             }
-            else if (condition is ConditionNull)
+            else if (condition is CheckNull)
             {
-                return this.GetConditionNullString(((ConditionNull)condition).ValueIsNull);
+                return this.GetConditionNullString(((CheckNull)condition).ValueIsNull);
             }
             throw new Exception("Condition not supported");
         }

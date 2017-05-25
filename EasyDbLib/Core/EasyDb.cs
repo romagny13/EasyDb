@@ -171,9 +171,9 @@ namespace EasyDbLib
             return this.CreateCommand(procedureName, CommandType.StoredProcedure);
         }
 
-        public SelectQuery<T> Select<T>(Table mapping) where T:new()
+        public SelectQuery<TModel> Select<TModel>(Table mapping) where TModel:new()
         {
-            return new SelectQuery<T>(this.queryService, this, typeof(T), mapping);
+            return new SelectQuery<TModel>(this.queryService, this, typeof(TModel), mapping);
         }
 
         public InsertQuery InsertInto(string tableName)

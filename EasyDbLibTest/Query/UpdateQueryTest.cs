@@ -14,6 +14,7 @@ namespace EasyDbLibTest.Query
         public static void ClassInit(TestContext context)
         {
             InitDb.CreateDbTest();
+            Mapping.Clear();
         }
 
         public EasyDb GetDb()
@@ -44,8 +45,8 @@ namespace EasyDbLibTest.Query
                   .Update("users")
                   .Set("firstname", user.FirstName)
                   .Set("lastname", user.LastName)
-                  .Where(Condition.Op("id", user.Id))
-                  .Where(Condition.Op("id", 2))
+                  .Where(Check.Op("id", user.Id))
+                  .Where(Check.Op("id", 2))
                   .GetQuery();
             }
             catch (Exception)
@@ -73,7 +74,7 @@ namespace EasyDbLibTest.Query
                  .Update("users")
                  .Set("firstname", user.FirstName)
                  .Set("lastname", user.LastName)
-                 .Where(Condition.Op("id", user.Id))
+                 .Where(Check.Op("id", user.Id))
                  .GetQuery();
 
             Assert.AreEqual("update [users] set [firstname]=@firstname,[lastname]=@lastname where [id]=@id", result);
@@ -96,7 +97,7 @@ namespace EasyDbLibTest.Query
                  .Update("users")
                  .Set("firstname", user.FirstName)
                  .Set("lastname", user.LastName)
-                 .Where(Condition.Op("id", user.Id))
+                 .Where(Check.Op("id", user.Id))
                  .CreateCommand();
 
             Assert.AreEqual("update [users] set [firstname]=@firstname,[lastname]=@lastname where [id]=@id",result.Command.CommandText);
@@ -129,7 +130,7 @@ namespace EasyDbLibTest.Query
                  .Update("users")
                  .Set("firstname", user.FirstName)
                  .Set("lastname", user.LastName)
-                 .Where(Condition.Op("lastname", "old value"))
+                 .Where(Check.Op("lastname", "old value"))
                  .CreateCommand();
 
             Assert.AreEqual(2, result.Command.Parameters.Count);
@@ -153,7 +154,7 @@ namespace EasyDbLibTest.Query
                  .Set("lastname", user.LastName)
                  .Set("age", user.Age)
                  .Set("email",user.Email)
-                 .Where(Condition.Op("id", user.Id))
+                 .Where(Check.Op("id", user.Id))
                  .CreateCommand();
 
             Assert.AreEqual("update [users] set [firstname]=@firstname,[lastname]=@lastname,[age]=@age,[email]=@email where [id]=@id", result.Command.CommandText);
@@ -196,7 +197,7 @@ namespace EasyDbLibTest.Query
                  .Set("lastname", user.LastName)
                  .Set("age", user.Age)
                  .Set("email", user.Email)
-                 .Where(Condition.Op("id", user.Id))
+                 .Where(Check.Op("id", user.Id))
                  .NonQueryAsync();
 
             Assert.AreEqual(1, rowAffected);

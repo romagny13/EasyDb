@@ -10,7 +10,7 @@ namespace EasyDbLibTest.Query
         [TestMethod]
         public void TestCreateMain_WithOp()
         {
-            var condition = Condition.Op("id", 1);
+            var condition = Check.Op("id", 1);
 
             var container = new ConditionAndParameterContainer(condition);
 
@@ -24,7 +24,7 @@ namespace EasyDbLibTest.Query
         [TestMethod]
         public void TestCreateMain_WithLike()
         {
-            var condition = Condition.Like("name", "%a");
+            var condition = Check.Like("name", "%a");
 
             var container = new ConditionAndParameterContainer(condition);
 
@@ -38,7 +38,7 @@ namespace EasyDbLibTest.Query
         [TestMethod]
         public void TestCreateMain_WithBetween()
         {
-            var condition = Condition.Between("range", 5,10);
+            var condition = Check.Between("range", 5,10);
 
             var container = new ConditionAndParameterContainer(condition);
 
@@ -52,7 +52,7 @@ namespace EasyDbLibTest.Query
         [TestMethod]
         public void TestCreateMain_WithIsNull()
         {
-            var condition = Condition.IsNull("user_id");
+            var condition = Check.IsNull("user_id");
 
             var container = new ConditionAndParameterContainer(condition);
 
@@ -66,7 +66,7 @@ namespace EasyDbLibTest.Query
         [TestMethod]
         public void TestCreateMain_WithIsNotNull()
         {
-            var condition = Condition.IsNotNull("user_id");
+            var condition = Check.IsNotNull("user_id");
 
             var container = new ConditionAndParameterContainer(condition);
 
@@ -82,7 +82,7 @@ namespace EasyDbLibTest.Query
         [TestMethod]
         public void TestCreateSub()
         {
-            var condition = Condition.Op("id", 1).And(Condition.Op("id",2));
+            var condition = Check.Op("id", 1).And(Check.Op("id",2));
 
             var container = new ConditionAndParameterContainer(condition);
 
@@ -105,7 +105,7 @@ namespace EasyDbLibTest.Query
         [TestMethod]
         public void TestCreateSub_WithOr()
         {
-            var condition = Condition.Op("id", 1).Or(Condition.Op("id", 2));
+            var condition = Check.Op("id", 1).Or(Check.Op("id", 2));
 
             var container = new ConditionAndParameterContainer(condition);
 
@@ -128,7 +128,7 @@ namespace EasyDbLibTest.Query
         [TestMethod]
         public void TestCreateSub_Multiples()
         {
-            var condition = Condition.Op("id", 1).Or(Condition.Op("id", 2)).Or(Condition.Op("id", 3));
+            var condition = Check.Op("id", 1).Or(Check.Op("id", 2)).Or(Check.Op("id", 3));
 
             var container = new ConditionAndParameterContainer(condition);
 

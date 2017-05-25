@@ -12,6 +12,7 @@ namespace EasyDbLibTest.Query
         public static void ClassInit(TestContext context)
         {
             InitDb.CreateDbTest();
+            Mapping.Clear();
         }
 
         public EasyDb GetDb()
@@ -209,7 +210,7 @@ namespace EasyDbLibTest.Query
         {
             var db = this.GetDb();
 
-            Mapping.AddTable("users").AddPrimaryKeyColumn("id", "id");
+            Mapping.SetTable("users").SetPrimaryKeyColumn("id", "id");
 
             var user = new User
             {
@@ -239,7 +240,7 @@ namespace EasyDbLibTest.Query
         {
             var db = this.GetDb();
 
-            Mapping.AddTable("users").AddPrimaryKeyColumn("id", "id");
+            Mapping.SetTable("users").SetPrimaryKeyColumn("id", "id");
 
             var user = new User
             {
@@ -269,12 +270,12 @@ namespace EasyDbLibTest.Query
         {
             var db = this.GetDb();
 
-            Mapping.AddTable("users")
-                .AddPrimaryKeyColumn("id", "Id")
-                .AddColumn("firstname","FirstName")
-                .AddColumn("lastname", "LastName")
-                .AddColumn("age", "Age")
-                .AddColumn("email", "Email");
+            Mapping.SetTable("users")
+                .SetPrimaryKeyColumn("id", "Id")
+                .SetColumn("firstname","FirstName")
+                .SetColumn("lastname", "LastName")
+                .SetColumn("age", "Age")
+                .SetColumn("email", "Email");
 
             var user = new User
             {

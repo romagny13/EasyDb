@@ -18,7 +18,7 @@ namespace EasyDbLib
             this.tableName = tableName;
         }
 
-        public DeleteQuery Where(Condition condition)
+        public DeleteQuery Where(Check condition)
         {
             if (this.hasCondition) { throw new Exception("One clause where"); }
             this.condition = new ConditionAndParameterContainer(condition);

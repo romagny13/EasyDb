@@ -7,6 +7,12 @@ namespace EasyDbLibTest
     [TestClass]
     public class QueryServiceTest
     {
+        [ClassInitialize()]
+        public static void ClassInit(TestContext context)
+        {
+            Mapping.Clear();
+        }
+
         // wrap quotes
 
         [TestMethod]
@@ -95,7 +101,7 @@ namespace EasyDbLibTest
         {
             var service = new QueryService();
 
-            Mapping.AddTable("posts");
+            Mapping.SetTable("posts");
 
             var result = service.GetColumns(Mapping.GetTable("posts"));
 
@@ -107,7 +113,7 @@ namespace EasyDbLibTest
         {
             var service = new QueryService();
 
-            Mapping.AddTable("posts").AddPrimaryKeyColumn("id", "id");
+            Mapping.SetTable("posts").SetPrimaryKeyColumn("id", "id");
 
             var result = service.GetColumns(Mapping.GetTable("posts"));
 
@@ -119,7 +125,7 @@ namespace EasyDbLibTest
         {
             var service = new QueryService();
 
-            Mapping.AddTable("posts").AddForeignKeyColumn("user_id", "UserId", "users", "id");
+            Mapping.SetTable("posts").SetForeignKeyColumn("user_id", "UserId", "users", "id");
 
             var result = service.GetColumns(Mapping.GetTable("posts"));
 
@@ -131,9 +137,9 @@ namespace EasyDbLibTest
         {
             var service = new QueryService();
 
-            Mapping.AddTable("posts")
-                .AddPrimaryKeyColumn("id", "id")
-                .AddForeignKeyColumn("user_id", "UserId", "users", "id");
+            Mapping.SetTable("posts")
+                .SetPrimaryKeyColumn("id", "id")
+                .SetForeignKeyColumn("user_id", "UserId", "users", "id");
 
             var result = service.GetColumns(Mapping.GetTable("posts"));
 
@@ -145,9 +151,9 @@ namespace EasyDbLibTest
         {
             var service = new QueryService();
 
-            Mapping.AddTable("posts")
-                .AddColumn("title", "Title")
-                .AddColumn("content", "Content");
+            Mapping.SetTable("posts")
+                .SetColumn("title", "Title")
+                .SetColumn("content", "Content");
 
             var result = service.GetColumns(Mapping.GetTable("posts"));
 
@@ -159,11 +165,11 @@ namespace EasyDbLibTest
         {
             var service = new QueryService();
 
-            Mapping.AddTable("posts")
-                .AddPrimaryKeyColumn("id", "id")
-                .AddColumn("title", "Title")
-                .AddColumn("content", "Content")
-                .AddForeignKeyColumn("user_id", "UserId", "users", "id");
+            Mapping.SetTable("posts")
+                .SetPrimaryKeyColumn("id", "id")
+                .SetColumn("title", "Title")
+                .SetColumn("content", "Content")
+                .SetForeignKeyColumn("user_id", "UserId", "users", "id");
 
 
             var result = service.GetColumns(Mapping.GetTable("posts"));
@@ -176,11 +182,11 @@ namespace EasyDbLibTest
         {
             var service = new QueryService();
 
-            Mapping.AddTable("posts")
-                .AddPrimaryKeyColumn("posts.id", "id")
-                .AddColumn("posts.title", "Title")
-                .AddColumn("posts.content", "Content")
-                .AddForeignKeyColumn("users.user_id", "UserId", "users", "id");
+            Mapping.SetTable("posts")
+                .SetPrimaryKeyColumn("posts.id", "id")
+                .SetColumn("posts.title", "Title")
+                .SetColumn("posts.content", "Content")
+                .SetForeignKeyColumn("users.user_id", "UserId", "users", "id");
 
 
             var result = service.GetColumns(Mapping.GetTable("posts"));
@@ -227,9 +233,9 @@ namespace EasyDbLibTest
         {
             var service = new QueryService();
 
-            Mapping.AddTable("posts")
-               .AddColumn("title", "Title")
-               .AddColumn("content", "Content");
+            Mapping.SetTable("posts")
+               .SetColumn("title", "Title")
+               .SetColumn("content", "Content");
 
             var result = service.GetSelect(new string[] { },null, Mapping.GetTable("posts"));
 
@@ -241,9 +247,9 @@ namespace EasyDbLibTest
         {
             var service = new QueryService();
 
-            Mapping.AddTable("posts")
-               .AddColumn("title", "Title")
-               .AddColumn("content", "Content");
+            Mapping.SetTable("posts")
+               .SetColumn("title", "Title")
+               .SetColumn("content", "Content");
 
             var result = service.GetSelect(new string[] { }, 10, Mapping.GetTable("posts"));
 
@@ -255,11 +261,11 @@ namespace EasyDbLibTest
         {
             var service = new QueryService();
 
-            Mapping.AddTable("posts")
-              .AddPrimaryKeyColumn("posts.id", "id")
-              .AddColumn("posts.title", "Title")
-              .AddColumn("posts.content", "Content")
-              .AddForeignKeyColumn("users.user_id", "UserId", "users", "id");
+            Mapping.SetTable("posts")
+              .SetPrimaryKeyColumn("posts.id", "id")
+              .SetColumn("posts.title", "Title")
+              .SetColumn("posts.content", "Content")
+              .SetForeignKeyColumn("users.user_id", "UserId", "users", "id");
 
             var result = service.GetSelect(new string[] { }, 10, Mapping.GetTable("posts"));
 
@@ -271,7 +277,7 @@ namespace EasyDbLibTest
         {
             var service = new QueryService();
 
-            Mapping.AddTable("posts");
+            Mapping.SetTable("posts");
 
             var result = service.GetSelect(new string[] { }, 10, Mapping.GetTable("posts"));
 
@@ -283,9 +289,9 @@ namespace EasyDbLibTest
         {
             var service = new QueryService();
 
-            Mapping.AddTable("posts")
-               .AddColumn("title", "Title")
-               .AddColumn("content", "Content");
+            Mapping.SetTable("posts")
+               .SetColumn("title", "Title")
+               .SetColumn("content", "Content");
 
             var result = service.GetSelect(new string[] { "distinct", "high_priority" }, null, Mapping.GetTable("posts"));
 
@@ -297,9 +303,9 @@ namespace EasyDbLibTest
         {
             var service = new QueryService();
 
-            Mapping.AddTable("posts")
-               .AddColumn("title", "Title")
-               .AddColumn("content", "Content");
+            Mapping.SetTable("posts")
+               .SetColumn("title", "Title")
+               .SetColumn("content", "Content");
 
             var result = service.GetSelect(new string[] { "distinct", "high_priority" }, 10, Mapping.GetTable("posts"));
 
@@ -311,11 +317,68 @@ namespace EasyDbLibTest
         {
             var service = new QueryService();
 
-            Mapping.AddTable("posts");
+            Mapping.SetTable("posts");
 
             var result = service.GetSelect(new string[] { "distinct", "high_priority" }, 10, Mapping.GetTable("posts"));
 
             Assert.AreEqual("select distinct high_priority top 10 *", result);
+        }
+
+        // select with table name
+
+        [TestMethod]
+        public void TestGetSelectWithTableName()
+        {
+            var service = new QueryService();
+
+            Mapping.SetTable("posts");
+
+            var result = service.GetSelectWithTableName(Mapping.GetTable("posts"));
+
+            Assert.AreEqual("select [posts].*", result);
+        }
+
+        [TestMethod]
+        public void TestGetSelectWithOnlyKeys_ReturnsAll()
+        {
+            var service = new QueryService();
+
+            Mapping.SetTable("posts")
+               .SetPrimaryKeyColumn("id", "Id")
+               .SetForeignKeyColumn("user_id","UserId","users","id");
+
+            var result = service.GetSelectWithTableName(Mapping.GetTable("posts"));
+
+            Assert.AreEqual("select [posts].*", result);
+        }
+
+        [TestMethod]
+        public void TestGetSelectWithColumns_ReturnColumnsl()
+        {
+            var service = new QueryService();
+
+            Mapping.SetTable("posts")
+               .SetPrimaryKeyColumn("id", "Id")
+               .SetColumn("title","Title")
+               .SetForeignKeyColumn("user_id", "UserId", "users", "id");
+
+            var result = service.GetSelectWithTableName(Mapping.GetTable("posts"));
+
+            Assert.AreEqual("select [posts].[id],[posts].[title],[posts].[user_id]", result);
+        }
+
+        [TestMethod]
+        public void TestGetSelectWithColumns_IgnoreColumns()
+        {
+            var service = new QueryService();
+
+            Mapping.SetTable("posts")
+               .SetColumn("title", "Title", true)
+               .SetColumn("content", "Content");
+
+            var result = service.GetSelectWithTableName(Mapping.GetTable("posts"));
+
+            Assert.AreEqual("select [posts].[content]", result);
         }
 
         // from
@@ -338,6 +401,26 @@ namespace EasyDbLibTest
             var result = service.GetFrom("dbo.posts");
 
             Assert.AreEqual(" from [dbo].[posts]", result);
+        }
+
+        [TestMethod]
+        public void TestGetFrom_WithTables()
+        {
+            var service = new QueryService();
+
+            var result = service.GetFrom("users", "permissions", "users_permissions");
+
+            Assert.AreEqual(" from [users],[permissions],[users_permissions]", result);
+        }
+
+        [TestMethod]
+        public void TestGetFrom_WithNoTable_ReturnsEmptyString()
+        {
+            var service = new QueryService();
+
+            var result = service.GetFrom();
+
+            Assert.AreEqual("", result);
         }
 
         // join order by 
@@ -467,7 +550,7 @@ namespace EasyDbLibTest
         [TestMethod]
         public void TestConditionOp_WithNoOperator_IsEquals()
         {
-            var result = Condition.Op("id", 10);
+            var result = Check.Op("id", 10);
             Assert.AreEqual("id", result.Column);
             Assert.AreEqual("=", result.Operator);
             Assert.AreEqual(10, result.Value);
@@ -476,7 +559,7 @@ namespace EasyDbLibTest
         [TestMethod]
         public void TestConditionOp_WithOperator()
         {
-            var result = Condition.Op("id", ">", 10);
+            var result = Check.Op("id", ">", 10);
             Assert.AreEqual("id", result.Column);
             Assert.AreEqual(">", result.Operator);
             Assert.AreEqual(10, result.Value);
@@ -488,7 +571,7 @@ namespace EasyDbLibTest
         public void TestGetWhere()
         {
             var service = new QueryService();
-            var condition = Condition.Op("a", "<", 10).And(Condition.Op("b", ">", 20)).Or(Condition.Between("c", 60, 100));
+            var condition = Check.Op("a", "<", 10).And(Check.Op("b", ">", 20)).Or(Check.Between("c", 60, 100));
             var container = new ConditionAndParameterContainer(condition);
             var result = service.GetWhere(container);
             Assert.AreEqual(" where [a]<@a and [b]>@b or [c] between 60 and 100", result);
@@ -498,7 +581,7 @@ namespace EasyDbLibTest
         public void TestGetWhere_RetrunsUniques()
         {
             var service = new QueryService();
-            var condition = Condition.Op("a", "<", 10).And(Condition.Op("a", ">", 20));
+            var condition = Check.Op("a", "<", 10).And(Check.Op("a", ">", 20));
             var container = new ConditionAndParameterContainer(condition);
             var result = service.GetWhere(container);
             Assert.AreEqual(" where [a]<@a and [a]>@a2", result);
@@ -520,7 +603,7 @@ namespace EasyDbLibTest
         {
             var service = new QueryService();
 
-            Mapping.AddTable("posts").AddForeignKeyColumn("user_id", "UserId", "users", "id");
+            Mapping.SetTable("posts").SetForeignKeyColumn("user_id", "UserId", "users", "id");
 
             var result = service.GetWhereHasOne(Mapping.GetTable("posts").GetForeignKeys("users"));
 
@@ -532,13 +615,48 @@ namespace EasyDbLibTest
         {
             var service = new QueryService();
 
-            Mapping.AddTable("posts")
-                .AddForeignKeyColumn("user_id", "UserId", "users", "id")
-                .AddForeignKeyColumn("user_id2", "UserId2", "users", "id2");
+            Mapping.SetTable("posts")
+                .SetForeignKeyColumn("user_id", "UserId", "users", "id")
+                .SetForeignKeyColumn("user_id2", "UserId2", "users", "id2");
 
             var result = service.GetWhereHasOne(Mapping.GetTable("posts").GetForeignKeys("users"));
 
             Assert.AreEqual(" where [id]=@user_id and [id2]=@user_id2", result);
+        }
+
+        // where has many to many
+
+        [TestMethod]
+        public void TestGetWhereHasManyToMany()
+        {
+            var service = new QueryService();
+
+            Mapping.SetIntermediateTable("users_permissions")
+                .SetPrimaryKeyColumn("user_id", "id", "users")
+                .SetPrimaryKeyColumn("permission_id", "id", "permissions");
+
+            var pk = Mapping.GetIntermediateTable("users_permissions").GetPrimaryKeys("permissions");
+            var pkForCheckValue = Mapping.GetIntermediateTable("users_permissions").GetPrimaryKeys("users");
+
+            var result =  service.GetWhereHasManyToMany(pk, pkForCheckValue);
+
+            Assert.AreEqual(" where [users_permissions].[permission_id]=[permissions].[id] and [users_permissions].[user_id]=@user_id", result);
+        }
+
+        [TestMethod]
+        public void TestGetWhereHasManyToMany_WithNoPk_ReturnsEmptyString()
+        {
+            var service = new QueryService();
+
+            Mapping.SetIntermediateTable("users_permissions")
+                .SetPrimaryKeyColumn("user_id", "id", "users");
+
+            var pk = Mapping.GetIntermediateTable("users_permissions").GetPrimaryKeys("permissions");
+            var pkForCheckValue = Mapping.GetIntermediateTable("users_permissions").GetPrimaryKeys("users");
+
+            var result = service.GetWhereHasManyToMany(pk, pkForCheckValue);
+
+            Assert.AreEqual("", result);
         }
 
     }

@@ -2,18 +2,25 @@
 using EasyDbLib;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Data;
+using System.Diagnostics;
 
 namespace EasyDbLibTest
 {
     [TestClass]
     public class MappingTest
     {
+        [ClassInitialize()]
+        public static void ClassInit(TestContext context)
+        {
+            Mapping.Clear();
+        }
 
         // check
 
         [TestMethod]
         public void TestGet_WitoutTable_ThrowException()
         {
+            
             bool failed = false;
             try
             {
@@ -30,10 +37,11 @@ namespace EasyDbLibTest
         [TestMethod]
         public void TestInvalidPropertyName_Fail()
         {
+            
             bool failed = false;
             try
             {
-                Mapping.AddTable("users").AddColumn("firstname","inv@alid");
+                Mapping.SetTable("users").SetColumn("firstname","inv@alid");
             }
             catch (Exception)
             {
@@ -46,10 +54,11 @@ namespace EasyDbLibTest
         [TestMethod]
         public void TestInvalidPropertyNameAndDbType_Fail()
         {
+            
             bool failed = false;
             try
             {
-                Mapping.AddTable("users").AddColumn("firstname", "inv@alid",DbType.String);
+                Mapping.SetTable("users").SetColumn("firstname", "inv@alid",DbType.String);
             }
             catch (Exception)
             {
@@ -62,10 +71,11 @@ namespace EasyDbLibTest
         [TestMethod]
         public void TestValidPropertyName_Success()
         {
+            
             bool failed = false;
             try
             {
-                Mapping.AddTable("users").AddColumn("firstname", "Valid", DbType.String);
+                Mapping.SetTable("users").SetColumn("firstname", "Valid", DbType.String);
             }
             catch (Exception)
             {
@@ -78,10 +88,11 @@ namespace EasyDbLibTest
         [TestMethod]
         public void TestInvalidPropertyName_WithPrimaryKey_Fail()
         {
+            
             bool failed = false;
             try
             {
-                Mapping.AddTable("users").AddPrimaryKeyColumn("firstname", "inv@alid");
+                Mapping.SetTable("users").SetPrimaryKeyColumn("firstname", "inv@alid");
             }
             catch (Exception)
             {
@@ -94,10 +105,11 @@ namespace EasyDbLibTest
         [TestMethod]
         public void TestInvalidPropertyName_WithPrimaryKeyAndDbType_Fail()
         {
+            
             bool failed = false;
             try
             {
-                Mapping.AddTable("users").AddPrimaryKeyColumn("firstname", "inv@alid", DbType.String);
+                Mapping.SetTable("users").SetPrimaryKeyColumn("firstname", "inv@alid", DbType.String);
             }
             catch (Exception)
             {
@@ -110,10 +122,11 @@ namespace EasyDbLibTest
         [TestMethod]
         public void TestInvalidPropertyName_WithValidPrimaryKey_Success()
         {
+            
             bool failed = false;
             try
             {
-                Mapping.AddTable("users").AddPrimaryKeyColumn("firstname", "valid", DbType.String);
+                Mapping.SetTable("users").SetPrimaryKeyColumn("firstname", "valid", DbType.String);
             }
             catch (Exception)
             {
@@ -126,10 +139,11 @@ namespace EasyDbLibTest
         [TestMethod]
         public void TestInvalidPropertyName_WithForeignKey_Fail()
         {
+            
             bool failed = false;
             try
             {
-                Mapping.AddTable("posts").AddForeignKeyColumn("user_id", "inv@alid","users","id");
+                Mapping.SetTable("posts").SetForeignKeyColumn("user_id", "inv@alid","users","id");
             }
             catch (Exception)
             {
@@ -142,10 +156,11 @@ namespace EasyDbLibTest
         [TestMethod]
         public void TestInvalidPropertyName_WithForeignKeyAndDbType_Fail()
         {
+            
             bool failed = false;
             try
             {
-                Mapping.AddTable("posts").AddForeignKeyColumn("user_id", "inv@alid", "users", "id", DbType.Int16);
+                Mapping.SetTable("posts").SetForeignKeyColumn("user_id", "inv@alid", "users", "id", DbType.Int16);
             }
             catch (Exception)
             {
@@ -158,10 +173,11 @@ namespace EasyDbLibTest
         [TestMethod]
         public void TestInvalidPropertyName_WithValidForeignKey_Success()
         {
+            
             bool failed = false;
             try
             {
-                Mapping.AddTable("posts").AddForeignKeyColumn("user_id", "valid", "users", "id", DbType.Int16);
+                Mapping.SetTable("posts").SetForeignKeyColumn("user_id", "valid", "users", "id", DbType.Int16);
             }
             catch (Exception)
             {
@@ -171,20 +187,22 @@ namespace EasyDbLibTest
             Assert.IsFalse(failed);
         }
 
+
         // has
 
         [TestMethod]
         public void TestAddMapping_HasTable()
         {
+            
             Mapping
-                .AddTable("products")
-                .AddColumn("id", "Id")
-                .AddColumn("name", "ProductName");
+                .SetTable("products")
+                .SetColumn("id", "Id")
+                .SetColumn("name", "ProductName");
 
             Mapping
-                .AddTable("users")
-                .AddColumn("id", "Id")
-                .AddColumn("first", "FirstNAme");
+                .SetTable("users")
+                .SetColumn("id", "Id")
+                .SetColumn("first", "FirstNAme");
 
 
             Assert.IsTrue(Mapping.HasTable("products"));
@@ -192,20 +210,31 @@ namespace EasyDbLibTest
             Assert.IsFalse(Mapping.HasTable("categories"));
         }
 
+        [TestMethod]
+        public void TestRemoveTable()
+        {
+            
+            Mapping.SetTable("posts");
+
+            Assert.IsTrue(Mapping.HasTable("posts"));
+
+            Assert.IsTrue(Mapping.RemoveTable("posts"));
+            Assert.IsFalse(Mapping.HasTable("posts"));
+        }
 
         [TestMethod]
         public void TestTables_HasColumns()
         {
+            
+            Mapping
+                .SetTable("products")
+                .SetColumn("id", "Id")
+                .SetColumn("name", "ProductName");
 
             Mapping
-                .AddTable("products")
-                .AddColumn("id", "Id")
-                .AddColumn("name", "ProductName");
-
-            Mapping
-                .AddTable("users")
-                .AddColumn("id", "Id")
-                .AddColumn("first", "FirstNAme");
+                .SetTable("users")
+                .SetColumn("id", "Id")
+                .SetColumn("first", "FirstNAme");
 
             Assert.IsTrue(Mapping.GetTable("products").HasColumn("id"));
             Assert.IsTrue(Mapping.GetTable("products").HasColumn("name"));
@@ -217,15 +246,31 @@ namespace EasyDbLibTest
         [TestMethod]
         public void TestKeyColumns()
         {
+            
             Mapping
-                .AddTable("posts")
-                .AddPrimaryKeyColumn("id", "Id")
-                .AddColumn("title", "Title")
-                .AddForeignKeyColumn("user_id", "UserId", "users", "id");
+                .SetTable("posts")
+                .SetPrimaryKeyColumn("id", "Id")
+                .SetColumn("title", "Title")
+                .SetForeignKeyColumn("user_id", "UserId", "users", "id");
 
             Assert.AreEqual(typeof(PrimaryKeyColumn), Mapping.GetTable("posts").GetColumn("id").GetType());
             Assert.AreEqual(typeof(Column), Mapping.GetTable("posts").GetColumn("title").GetType());
             Assert.AreEqual(typeof(ForeignKeyColumn), Mapping.GetTable("posts").GetColumn("user_id").GetType());
+        }
+
+        // set
+
+        [TestMethod]
+        public void TestSet()
+        {
+            
+            Mapping.SetTable("users");
+
+
+            Mapping.SetTable("users")
+                .SetColumn("id", "Id");
+
+            Assert.IsTrue(Mapping.GetTable("users").HasColumn("id"));
         }
 
         // get primary keys
@@ -233,11 +278,13 @@ namespace EasyDbLibTest
         [TestMethod]
         public void TestGetPrimaryKeys()
         {
+            
+
             Mapping
-                .AddTable("posts")
-                .AddPrimaryKeyColumn("id", "Id")
-                .AddColumn("title", "Title")
-                .AddForeignKeyColumn("user_id", "UserId", "users", "id");
+                .SetTable("posts")
+                .SetPrimaryKeyColumn("id", "Id")
+                .SetColumn("title", "Title")
+                .SetForeignKeyColumn("user_id", "UserId", "users", "id");
 
             var result = Mapping.GetTable("posts").GetPrimaryKeys();
 
@@ -250,12 +297,14 @@ namespace EasyDbLibTest
         [TestMethod]
         public void TestGetMultiplePrimaryKeys()
         {
+            
+
             Mapping
-                .AddTable("posts")
-                .AddPrimaryKeyColumn("id", "Id")
-                .AddPrimaryKeyColumn("id2", "Id2")
-                .AddColumn("title", "Title")
-              .AddForeignKeyColumn("user_id", "UserId", "users", "id");
+                .SetTable("posts")
+                .SetPrimaryKeyColumn("id", "Id")
+                .SetPrimaryKeyColumn("id2", "Id2")
+                .SetColumn("title", "Title")
+              .SetForeignKeyColumn("user_id", "UserId", "users", "id");
 
             var result = Mapping.GetTable("posts").GetPrimaryKeys();
 
@@ -275,11 +324,13 @@ namespace EasyDbLibTest
         [TestMethod]
         public void TestGetForeignKeys()
         {
+            
+
             Mapping
-                .AddTable("posts")
-                .AddPrimaryKeyColumn("id", "Id")
-                .AddColumn("title", "Title")
-                .AddForeignKeyColumn("user_id", "UserId", "users", "id");
+                .SetTable("posts")
+                .SetPrimaryKeyColumn("id", "Id")
+                .SetColumn("title", "Title")
+                .SetForeignKeyColumn("user_id", "UserId", "users", "id");
 
             var result = Mapping.GetTable("posts").GetForeignKeys("users");
 
@@ -292,12 +343,14 @@ namespace EasyDbLibTest
         [TestMethod]
         public void TestGetMultipleForeignKeys()
         {
+            
+
             Mapping
-                .AddTable("posts")
-                .AddPrimaryKeyColumn("id", "Id")
-                .AddColumn("title", "Title")
-                .AddForeignKeyColumn("user_id", "UserId", "users", "id")
-                .AddForeignKeyColumn("user_id2", "UserId2", "users", "id2");
+                .SetTable("posts")
+                .SetPrimaryKeyColumn("id", "Id")
+                .SetColumn("title", "Title")
+                .SetForeignKeyColumn("user_id", "UserId", "users", "id")
+                .SetForeignKeyColumn("user_id2", "UserId2", "users", "id2");
 
             var result = Mapping.GetTable("posts").GetForeignKeys("users");
 
@@ -315,13 +368,15 @@ namespace EasyDbLibTest
         [TestMethod]
         public void TestGetOnlyForeignKeysForTableReferenced()
         {
+            
+
             Mapping
-                .AddTable("posts")
-                .AddPrimaryKeyColumn("id", "Id")
-                .AddColumn("title", "Title")
-                .AddForeignKeyColumn("category_id", "CategoryId", "categories", "id")
-                .AddForeignKeyColumn("user_id", "UserId", "users", "id")
-                .AddForeignKeyColumn("user_id2", "UserId2", "users", "id2");
+                .SetTable("posts")
+                .SetPrimaryKeyColumn("id", "Id")
+                .SetColumn("title", "Title")
+                .SetForeignKeyColumn("category_id", "CategoryId", "categories", "id")
+                .SetForeignKeyColumn("user_id", "UserId", "users", "id")
+                .SetForeignKeyColumn("user_id2", "UserId2", "users", "id2");
 
             var result = Mapping.GetTable("posts").GetForeignKeys("categories");
 
@@ -346,10 +401,12 @@ namespace EasyDbLibTest
         [TestMethod]
         public void TestDbType()
         {
+            
+
             Mapping
-                .AddTable("posts")
-                .AddColumn("id", "Id", DbType.Int16)
-                .AddColumn("title", "Title", DbType.String);
+                .SetTable("posts")
+                .SetColumn("id", "Id", DbType.Int16)
+                .SetColumn("title", "Title", DbType.String);
 
             Assert.AreEqual(DbType.Int16, Mapping.GetTable("posts").GetColumn("id").DbType);
             Assert.AreEqual(DbType.String, Mapping.GetTable("posts").GetColumn("title").DbType);
@@ -358,10 +415,12 @@ namespace EasyDbLibTest
         [TestMethod]
         public void TestDbType_WithoutValue_IsNull()
         {
+            
+
             Mapping
-                .AddTable("posts")
-                .AddColumn("id", "Id")
-                .AddColumn("title", "Title");
+                .SetTable("posts")
+                .SetColumn("id", "Id")
+                .SetColumn("title", "Title");
 
             Assert.AreEqual(null, Mapping.GetTable("posts").GetColumn("id").DbType);
             Assert.AreEqual(null, Mapping.GetTable("posts").GetColumn("title").DbType);

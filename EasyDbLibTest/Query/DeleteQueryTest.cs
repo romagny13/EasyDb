@@ -36,8 +36,8 @@ namespace EasyDbLibTest.Query
             {
                 var result = db
                  .DeleteFrom("users")
-                 .Where(Condition.Op("id", 2))
-                 .Where(Condition.Op("id",3))
+                 .Where(Check.Op("id", 2))
+                 .Where(Check.Op("id",3))
                  .GetQuery();
             }
             catch (Exception)
@@ -56,7 +56,7 @@ namespace EasyDbLibTest.Query
 
             var result = db
                 .DeleteFrom("users")
-                .Where(Condition.Op("id", 2))
+                .Where(Check.Op("id", 2))
                 .GetQuery();
 
             Assert.AreEqual("delete from [users] where [id]=@id", result);
@@ -70,7 +70,7 @@ namespace EasyDbLibTest.Query
 
             var result = db
                 .DeleteFrom("users")
-                .Where(Condition.Op("id", 3).Or(Condition.Op("id", 4)))
+                .Where(Check.Op("id", 3).Or(Check.Op("id", 4)))
                 .GetQuery();
 
             Assert.AreEqual("delete from [users] where [id]=@id or [id]=@id2", result); ;
@@ -85,7 +85,7 @@ namespace EasyDbLibTest.Query
 
             var result = db
                 .DeleteFrom("users")
-                .Where(Condition.Op("id", 2))
+                .Where(Check.Op("id", 2))
                 .CreateCommand();
 
             Assert.AreEqual("delete from [users] where [id]=@id", result.Command.CommandText);
@@ -104,7 +104,7 @@ namespace EasyDbLibTest.Query
 
             var result = db
                 .DeleteFrom("users")
-                .Where(Condition.Op("id", 3).Or(Condition.Op("id", 4)))
+                .Where(Check.Op("id", 3).Or(Check.Op("id", 4)))
                 .CreateCommand();
 
             Assert.AreEqual("delete from [users] where [id]=@id or [id]=@id2", result.Command.CommandText);
@@ -128,7 +128,7 @@ namespace EasyDbLibTest.Query
 
             var result = await db
                 .DeleteFrom("posts")
-                .Where(Condition.Op("id", 2))
+                .Where(Check.Op("id", 2))
                 .NonQueryAsync();
 
             Assert.AreEqual(1, result);

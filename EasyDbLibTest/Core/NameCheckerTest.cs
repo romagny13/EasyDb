@@ -7,24 +7,7 @@ namespace EasyDbLibTest.Core
     [TestClass]
     public class NameCheckerTest
     {
-        [TestMethod]
-        public void TestValidTableName()
-        {
-           Assert.IsTrue(NameChecker.CheckTableName("valid"));
-        }
-
-        [TestMethod]
-        public void TestValidTableName_WithSpace_IsValid()
-        {
-            Assert.IsTrue(NameChecker.CheckTableName("valid table"));
-        }
-
-        [TestMethod]
-        public void TestValidTableName_WithDash_IsValid()
-        {
-            Assert.IsTrue(NameChecker.CheckTableName("valid_table"));
-        }
-
+     
         [TestMethod]
         public void TestValidPropertyName()
         {

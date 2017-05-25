@@ -14,6 +14,7 @@ namespace EasyDbLibTest
         public static void ClassInit(TestContext context)
         {
             InitDb.CreateDbTest();
+            Mapping.Clear();
         }
 
         // create valid commands
@@ -173,7 +174,6 @@ namespace EasyDbLibTest
             Assert.AreEqual(null, result.age);
             Assert.AreEqual(user.Email, result.email);
         }
-     
 
     }
 

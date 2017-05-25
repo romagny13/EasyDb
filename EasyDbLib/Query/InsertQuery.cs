@@ -80,7 +80,7 @@ namespace EasyDbLib
 
             return await this.easyDbInstance
                   .Select<TModel>(mapping)
-                  .Where(Condition.Op(primaryKeys[0].ColumnName, lastInserted))
+                  .Where(Check.Op(primaryKeys[0].ColumnName, lastInserted))
                   .ReadOneAsync();
         }
     }

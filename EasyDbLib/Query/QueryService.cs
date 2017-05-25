@@ -15,12 +15,12 @@ namespace EasyDbLib
             this.endQuote = endQuote;
         }
 
-        public string WrapWithQuotes(string value)
+        public virtual string WrapWithQuotes(string value)
         {
             return this.startQuote + value + this.endQuote;
         }
 
-        public string GetTypedValue(object value)
+        public virtual string GetTypedValue(object value)
         {
             if (value.GetType() == typeof(string))
             {
@@ -32,17 +32,17 @@ namespace EasyDbLib
             }
         }
 
-        public string GetStatements(string[] statements)
+        public virtual string GetStatements(string[] statements)
         {
             return statements.Length > 0 ? " " + string.Join(" ", statements) : "";
         }
 
-        public string GetLimit(int? top)
+        public virtual string GetLimit(int? top)
         {
             return top.HasValue ? " top " + top : "";
         }
 
-        public string FormatTableAndColumn(string columnName)
+        public virtual string FormatTableAndColumn(string columnName)
         {
             var result = new List<string>();
             var parts = columnName.Split('.');
@@ -53,13 +53,13 @@ namespace EasyDbLib
             return string.Join(".", result);
         }
 
-        public string GetColumns(Table mapping)
+        public virtual string GetColumns(Table mapping)
         {
             var result = new List<string>();
 
             if (!mapping.HasNoColumnOrOnlyKeys)
             {
-                foreach (var column in mapping.Columns)
+                foreach (var column in mapping.columns)
                 {
                     if (!column.Value.Ignore)
                     {
@@ -75,7 +75,29 @@ namespace EasyDbLib
             return " *";
         }
 
-        public string GetColumns(string[] columns, bool space = true)
+        public virtual string GetColumnsWithTableName(Table mapping)
+        {
+            var result = new List<string>();
+
+            if (!mapping.HasNoColumnOrOnlyKeys)
+            {
+                foreach (var column in mapping.columns)
+                {
+                    if (!column.Value.Ignore)
+                    {
+                        result.Add(this.WrapWithQuotes(mapping.TableName) + "." + this.FormatTableAndColumn(column.Value.ColumnName));
+                    }
+                }
+
+                if (result.Count > 0)
+                {
+                    return " " + string.Join(",", result);
+                }
+            }
+            return " " + this.WrapWithQuotes(mapping.TableName) + ".*";
+        }
+
+        public virtual string GetColumns(string[] columns, bool space = true)
         {
             var result = new List<string>();
             foreach (var column in columns)
@@ -85,19 +107,19 @@ namespace EasyDbLib
             return space ? " " + string.Join(",", result) : string.Join(",", result);
         }
 
-        public bool IsValidSort(string value)
+        public virtual bool IsValidSort(string value)
         {
             return value.ToLower() == "desc" || value.ToLower() == "asc";
         }
 
-        public string JoinOrderByStringValue(string sort)
+        public virtual string JoinOrderByStringValue(string sort)
         {
             var parts = sort.Split(' ');
             if(parts.Length > 2 || (parts.Length == 2 && !IsValidSort(parts[1]))) { throw new Exception("Invalid sort");}
             return parts.Length == 2 ? this.FormatTableAndColumn(parts[0]) + " " + parts[1] : this.FormatTableAndColumn(parts[0]);
         }
 
-        public string GetSorts(string[] sorts)
+        public virtual string GetSorts(string[] sorts)
         {
             var result = new List<string>();
             foreach (var sort in sorts)
@@ -107,7 +129,7 @@ namespace EasyDbLib
             return string.Join(",", result);
         }
 
-        public string GetConditionString(ConditionAndParameterContainer condition)
+        public virtual string GetConditionString(ConditionAndParameterContainer condition)
         {
             var result = this.FormatTableAndColumn(condition.Main.Column) + condition.Main.ValueString;
 
@@ -121,13 +143,13 @@ namespace EasyDbLib
             return result;
         }
 
-        public string GetParameterName(string columnName)
+        public virtual string GetParameterName(string columnName)
         {
             var result = columnName.Split('.').Last();
             return "@" + result.Replace(' ', '_');
         }
 
-        public string GetParameters(string[] columns)
+        public virtual string GetParameters(string[] columns)
         {
             var result = new List<string>();
             foreach (var column in columns)
@@ -137,7 +159,7 @@ namespace EasyDbLib
             return string.Join(",", result);
         }
 
-        public string GetSet(string[] columns)
+        public virtual string GetSet(string[] columns)
         {
             var result = new List<string>();
             foreach (var column in columns)
@@ -149,27 +171,45 @@ namespace EasyDbLib
 
         // select
 
-        public string GetSelect(string[] statements, int? limit, Table mapping)
+        public virtual string GetSelect(string[] statements, int? limit, Table mapping)
         {
             return "select" +  this.GetStatements(statements) + this.GetLimit(limit) + this.GetColumns(mapping);
         }
 
-        public string GetSelect(Table mapping)
+        public virtual string GetSelect(Table mapping)
         {
             return "select" + this.GetColumns(mapping);
         }
 
-        // from 
-
-        public string GetFrom(string table)
+        public virtual string GetSelectWithTableName(Table mapping)
         {
-            return " from " + this.FormatTableAndColumn(table) ;
+            return "select" + this.GetColumnsWithTableName(mapping);
         }
 
+        // from 
+
+        public virtual string GetFrom(string tableName)
+        {
+            return " from " + this.FormatTableAndColumn(tableName) ;
+        }
+
+        public virtual string GetFrom(params string[] tableNames)
+        {
+            if (tableNames.Length > 0)
+            {
+                var result = new List<string>();
+                foreach (var tableName in tableNames)
+                {
+                    result.Add(this.FormatTableAndColumn(tableName));
+                }
+                return " from " + string.Join(",",result);
+            }
+            return "";
+        }
 
         // order by
 
-        public string GetOrderBy(string[] sorts)
+        public virtual string GetOrderBy(string[] sorts)
         {
             return sorts != null && sorts.Length > 0 ? " order by " + this.GetSorts(sorts): "";
         }
@@ -177,7 +217,7 @@ namespace EasyDbLib
 
         // where 
 
-        public string GetWhere(ConditionAndParameterContainer condition)
+        public virtual string GetWhere(ConditionAndParameterContainer condition)
         {
             if (condition != null)
             {
@@ -186,7 +226,7 @@ namespace EasyDbLib
             return "";
         }
 
-        public string GetWhereHasOne(ForeignKeyColumn[] foreignKeys)
+        public virtual string GetWhereHasOne(ForeignKeyColumn[] foreignKeys)
         {
             // where pk = @fk and pk2=@fk2
             var result = new List<string>();
@@ -197,7 +237,7 @@ namespace EasyDbLib
             return " where " + string.Join(" and ", result);
         }
 
-        public string GetWhereHasMany(ForeignKeyColumn[] foreignKeys)
+        public virtual string GetWhereHasMany(ForeignKeyColumn[] foreignKeys)
         {
             // where pk = @fk and pk2=@fk2
             var result = new List<string>();
@@ -208,9 +248,27 @@ namespace EasyDbLib
             return " where " + string.Join(" and ", result);
         }
 
+        public virtual string GetWhereHasManyToMany(IntermediatePrimaryKeyColumn[] intermediateTablePrimaryKeys, IntermediatePrimaryKeyColumn[] intermediateTablePrimaryKeysForCheckValue)
+        {
+            if (intermediateTablePrimaryKeys.Length > 0 && intermediateTablePrimaryKeysForCheckValue.Length > 0)
+            {
+                var result = new List<string>();
+                foreach (var intermediateTablePrimaryKey in intermediateTablePrimaryKeys)
+                {
+                    result.Add(this.WrapWithQuotes(intermediateTablePrimaryKey.TableName) + "." + this.WrapWithQuotes(intermediateTablePrimaryKey.ColumnName) + "=" + this.WrapWithQuotes(intermediateTablePrimaryKey.TargetTableName) + "." + this.WrapWithQuotes(intermediateTablePrimaryKey.TargetPrimaryKey));
+                }
+                foreach (var intermediateTablePrimaryKeyForCheckValue in intermediateTablePrimaryKeysForCheckValue)
+                {
+                    result.Add(this.WrapWithQuotes(intermediateTablePrimaryKeyForCheckValue.TableName) + "." + this.WrapWithQuotes(intermediateTablePrimaryKeyForCheckValue.ColumnName) + "=" + this.GetParameterName(intermediateTablePrimaryKeyForCheckValue.ColumnName));
+                }
+                return " where " + string.Join(" and ", result);
+            }
+            return "";
+        }
+
         // insert
 
-        public string GetInsertInto(string table, string[] columns, bool lastInsertedId)
+        public virtual string GetInsertInto(string table, string[] columns, bool lastInsertedId)
         {
             var result = "insert into " + this.FormatTableAndColumn(table) + " (" + this.GetColumns(columns, false) + ")";
             if (lastInsertedId) { result += " output inserted.id"; }
@@ -220,14 +278,14 @@ namespace EasyDbLib
 
         // update
 
-        public string GetUpdate(string table, string[] columns, ConditionAndParameterContainer condition)
+        public virtual string GetUpdate(string table, string[] columns, ConditionAndParameterContainer condition)
         {
             return "update " + this.FormatTableAndColumn(table) + " set " + this.GetSet(columns) + this.GetWhere(condition);
         }
 
         // delete
 
-        public string GetDelete(string table, ConditionAndParameterContainer condition)
+        public virtual string GetDelete(string table, ConditionAndParameterContainer condition)
         {
             return "delete from " + this.FormatTableAndColumn(table) + this.GetWhere(condition);
         }

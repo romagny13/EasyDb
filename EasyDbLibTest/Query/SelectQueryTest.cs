@@ -14,6 +14,7 @@ namespace EasyDbLibTest
         public static void ClassInit(TestContext context)
         {
             InitDb.CreateDbTest();
+            Mapping.Clear();
         }
 
         public EasyDb GetDb()
@@ -31,7 +32,7 @@ namespace EasyDbLibTest
             bool failed = false;
             var db = this.GetDb();
 
-            Mapping.AddTable("users");
+            Mapping.SetTable("users");
 
             try
             {
@@ -54,7 +55,7 @@ namespace EasyDbLibTest
             bool failed = false;
             var db = this.GetDb();
 
-            Mapping.AddTable("users");
+            Mapping.SetTable("users");
 
             try
             {
@@ -77,14 +78,14 @@ namespace EasyDbLibTest
             bool failed = false;
             var db = this.GetDb();
 
-            Mapping.AddTable("users");
+            Mapping.SetTable("users");
 
             try
             {
                 var result = db
                     .Select<UserLikeTable>(Mapping.GetTable("users"))
-                    .Where(Condition.Op("id", 2))
-                    .Where(Condition.Op("id", 3))
+                    .Where(Check.Op("id", 2))
+                    .Where(Check.Op("id", 3))
                     .GetQuery();
             }
             catch (Exception)
@@ -100,7 +101,7 @@ namespace EasyDbLibTest
             bool failed = false;
             var db = this.GetDb();
 
-            Mapping.AddTable("users");
+            Mapping.SetTable("users");
 
             try
             {
@@ -125,7 +126,7 @@ namespace EasyDbLibTest
 
             var db = this.GetDb();
 
-            Mapping.AddTable("users");
+            Mapping.SetTable("users");
 
             var result = db
                     .Select<UserLikeTable>(Mapping.GetTable("users"))
@@ -142,7 +143,7 @@ namespace EasyDbLibTest
 
             var db = this.GetDb();
 
-            Mapping.AddTable("users").AddPrimaryKeyColumn("id","id");
+            Mapping.SetTable("users").SetPrimaryKeyColumn("id","id");
 
             var result = db
                     .Select<UserLikeTable>(Mapping.GetTable("users"))
@@ -157,8 +158,8 @@ namespace EasyDbLibTest
             var db = this.GetDb();
 
             Mapping
-                .AddTable("posts")
-                .AddForeignKeyColumn("user_id", "UserId","users","id");
+                .SetTable("posts")
+                .SetForeignKeyColumn("user_id", "UserId","users","id");
 
             var result = db
                     .Select<UserLikeTable>(Mapping.GetTable("posts"))
@@ -173,10 +174,10 @@ namespace EasyDbLibTest
             var db = this.GetDb();
 
             Mapping
-                .AddTable("posts")
-                .AddColumn("title","Title")
-                .AddColumn("content","Content")
-                .AddForeignKeyColumn("user_id", "UserId", "users", "id");
+                .SetTable("posts")
+                .SetColumn("title","Title")
+                .SetColumn("content","Content")
+                .SetForeignKeyColumn("user_id", "UserId", "users", "id");
 
             var result = db
                     .Select<UserLikeTable>(Mapping.GetTable("posts"))
@@ -191,10 +192,10 @@ namespace EasyDbLibTest
             var db = this.GetDb();
 
             Mapping
-                .AddTable("posts")
-                .AddColumn("title", "Title",true)
-                .AddColumn("content", "Content")
-                .AddForeignKeyColumn("user_id", "UserId", "users", "id");
+                .SetTable("posts")
+                .SetColumn("title", "Title",true)
+                .SetColumn("content", "Content")
+                .SetForeignKeyColumn("user_id", "UserId", "users", "id");
 
             var result = db
                     .Select<UserLikeTable>(Mapping.GetTable("posts"))
@@ -209,10 +210,10 @@ namespace EasyDbLibTest
             var db = this.GetDb();
 
             Mapping
-                .AddTable("posts")
-                .AddColumn("title", "Title", true)
-                .AddColumn("content", "Content", true)
-                .AddForeignKeyColumn("user_id", "UserId", "users", "id",true);
+                .SetTable("posts")
+                .SetColumn("title", "Title", true)
+                .SetColumn("content", "Content", true)
+                .SetForeignKeyColumn("user_id", "UserId", "users", "id",true);
 
             var result = db
                     .Select<UserLikeTable>(Mapping.GetTable("posts"))
@@ -229,7 +230,7 @@ namespace EasyDbLibTest
 
             var db = this.GetDb();
 
-            Mapping.AddTable("users").AddPrimaryKeyColumn("id", "id");
+            Mapping.SetTable("users").SetPrimaryKeyColumn("id", "id");
 
             var result = db
                     .Select<UserLikeTable>(Mapping.GetTable("users"))
@@ -245,10 +246,10 @@ namespace EasyDbLibTest
 
             var db = this.GetDb();
 
-            Mapping.AddTable("users")
-                .AddPrimaryKeyColumn("id", "id")
-                .AddColumn("firstname","FirstName")
-                .AddColumn("lastname", "LastName");
+            Mapping.SetTable("users")
+                .SetPrimaryKeyColumn("id", "id")
+                .SetColumn("firstname","FirstName")
+                .SetColumn("lastname", "LastName");
 
             var result = db
                     .Select<UserLikeTable>(Mapping.GetTable("users"))
@@ -265,11 +266,11 @@ namespace EasyDbLibTest
         {
             var db = this.GetDb();
 
-            Mapping.AddTable("users");
+            Mapping.SetTable("users");
 
             var result = db
                     .Select<UserLikeTable>(Mapping.GetTable("users"))
-                    .Where(Condition.Op("id",1))
+                    .Where(Check.Op("id",1))
                     .GetQuery();
 
             Assert.AreEqual("select * from [users] where [id]=@id", result);
@@ -280,11 +281,11 @@ namespace EasyDbLibTest
         {
             var db = this.GetDb();
 
-            Mapping.AddTable("users");
+            Mapping.SetTable("users");
 
             var result = db
                     .Select<UserLikeTable>(Mapping.GetTable("users"))
-                    .Where(Condition.Op("id", 1).Or(Condition.Op("id",2)))
+                    .Where(Check.Op("id", 1).Or(Check.Op("id",2)))
                     .GetQuery();
 
             Assert.AreEqual("select * from [users] where [id]=@id or [id]=@id2", result);
@@ -297,7 +298,7 @@ namespace EasyDbLibTest
         {
             var db = this.GetDb();
 
-            Mapping.AddTable("users");
+            Mapping.SetTable("users");
 
             var result = db
                     .Select<UserLikeTable>(Mapping.GetTable("users"))
@@ -312,7 +313,7 @@ namespace EasyDbLibTest
         {
             var db = this.GetDb();
 
-            Mapping.AddTable("users");
+            Mapping.SetTable("users");
 
             var result = db
                     .Select<UserLikeTable>(Mapping.GetTable("users"))
@@ -329,11 +330,11 @@ namespace EasyDbLibTest
         {
             var db = this.GetDb();
 
-            Mapping.AddTable("users");
+            Mapping.SetTable("users");
 
             var result = db
                     .Select<UserLikeTable>(Mapping.GetTable("users"))
-                      .Where(Condition.Op("id", 1).Or(Condition.Op("id", 2)))
+                      .Where(Check.Op("id", 1).Or(Check.Op("id", 2)))
                     .CreateCommand();
 
             Assert.AreEqual("select * from [users] where [id]=@id or [id]=@id2", result.Command.CommandText);
@@ -355,11 +356,11 @@ namespace EasyDbLibTest
         {
             var db = this.GetDb();
 
-            Mapping.AddTable("users");
+            Mapping.SetTable("users");
 
             var result = await db
                 .Select<UserLikeTable>(Mapping.GetTable("users"))
-                .Where(Condition.Op("id", 1))
+                .Where(Check.Op("id", 1))
                 .ReadOneAsync();
 
             Assert.IsNotNull(result);
@@ -375,16 +376,16 @@ namespace EasyDbLibTest
         {
             var db = this.GetDb();
 
-            Mapping.AddTable("users")
-                .AddPrimaryKeyColumn("id", "Id")
-                .AddColumn("firstname", "FirstName")
-                .AddColumn("lastname", "LastName")
-                .AddColumn("age", "Age")
-                .AddColumn("email", "Email");
+            Mapping.SetTable("users")
+                .SetPrimaryKeyColumn("id", "Id")
+                .SetColumn("firstname", "FirstName")
+                .SetColumn("lastname", "LastName")
+                .SetColumn("age", "Age")
+                .SetColumn("email", "Email");
 
             var result = await db
                 .Select<User>(Mapping.GetTable("users"))
-                .Where(Condition.Op("id", 1))
+                .Where(Check.Op("id", 1))
                 .ReadOneAsync();
 
             Assert.IsNotNull(result);
@@ -402,7 +403,7 @@ namespace EasyDbLibTest
         {
             var db = this.GetDb();
 
-            Mapping.AddTable("users");
+            Mapping.SetTable("users");
 
             var result = await db
                 .Select<UserLikeTable>(Mapping.GetTable("users"))
@@ -421,6 +422,8 @@ namespace EasyDbLibTest
             Assert.AreEqual("Prem", result[1].lastname);
             Assert.AreEqual(30, result[1].age);
             Assert.AreEqual(null, result[1].email);
+
+          
         }
 
         [TestMethod]
@@ -428,12 +431,12 @@ namespace EasyDbLibTest
         {
             var db = this.GetDb();
 
-            Mapping.AddTable("users")
-                .AddPrimaryKeyColumn("id", "Id")
-                .AddColumn("firstname", "FirstName")
-                .AddColumn("lastname", "LastName")
-                .AddColumn("age", "Age")
-                .AddColumn("email", "Email");
+            Mapping.SetTable("users")
+                .SetPrimaryKeyColumn("id", "Id")
+                .SetColumn("firstname", "FirstName")
+                .SetColumn("lastname", "LastName")
+                .SetColumn("age", "Age")
+                .SetColumn("email", "Email");
 
             var result = await db
                 .Select<User>(Mapping.GetTable("users"))

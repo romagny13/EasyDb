@@ -9,6 +9,12 @@ namespace EasyDbLibTest
     [TestClass]
     public class ModelResolverTest
     {
+        [ClassInitialize()]
+        public static void ClassInit(TestContext context)
+        {
+            Mapping.Clear();
+        }
+
         [TestMethod]
         public void TestCreateModelInstance()
         {
@@ -251,8 +257,8 @@ namespace EasyDbLibTest
         {
             var resolver = new ModelResolver();
 
-            Mapping.AddTable("users").AddColumn("id", "Id")
-                .AddColumn("first", "FirstName");
+            Mapping.SetTable("users").SetColumn("id", "Id")
+                .SetColumn("first", "FirstName");
 
             var model = (MyModelMapped)resolver.CreateModelInstance(typeof(MyModelMapped));
 
@@ -267,8 +273,8 @@ namespace EasyDbLibTest
         {
             var resolver = new ModelResolver();
 
-            Mapping.AddTable("users").AddColumn("id", "Id")
-                .AddColumn("first", "FirstName");
+            Mapping.SetTable("users").SetColumn("id", "Id")
+                .SetColumn("first", "FirstName");
 
             var model = (MyModelMapped)resolver.CreateModelInstance(typeof(MyModelMapped));
 
@@ -283,8 +289,8 @@ namespace EasyDbLibTest
         {
             var resolver = new ModelResolver();
 
-            Mapping.AddTable("users").AddColumn("id", "Id")
-                .AddColumn("first", "FirstName");
+            Mapping.SetTable("users").SetColumn("id", "Id")
+                .SetColumn("first", "FirstName");
 
             var model = (MyModelMapped)resolver.CreateModelInstance(typeof(MyModelMapped));
 
@@ -299,8 +305,8 @@ namespace EasyDbLibTest
         {
             var resolver = new ModelResolver();
 
-            Mapping.AddTable("users").AddColumn("id", "Id")
-                .AddColumn("first", "FirstName", true);
+            Mapping.SetTable("users").SetColumn("id", "Id")
+                .SetColumn("first", "FirstName", true);
 
             var model = (MyModelMapped)resolver.CreateModelInstance(typeof(MyModelMapped));
 
@@ -315,8 +321,8 @@ namespace EasyDbLibTest
         {
             var resolver = new ModelResolver();
 
-            Mapping.AddTable("users").AddColumn("id", "Id",true)
-                .AddColumn("first", "FirstName");
+            Mapping.SetTable("users").SetColumn("id", "Id",true)
+                .SetColumn("first", "FirstName");
 
             var model = (MyModelMapped)resolver.CreateModelInstance(typeof(MyModelMapped));
 
@@ -330,8 +336,8 @@ namespace EasyDbLibTest
         {
             var resolver = new ModelResolver();
 
-            Mapping.AddTable("users").AddColumn("id", "Id", true)
-                .AddColumn("first", "FirstName");
+            Mapping.SetTable("users").SetColumn("id", "Id", true)
+                .SetColumn("first", "FirstName");
 
             var model = (MyModelMapped)resolver.CreateModelInstance(typeof(MyModelMapped));
 
@@ -350,8 +356,8 @@ namespace EasyDbLibTest
         {
             var resolver = new ModelResolver();
 
-            Mapping.AddTable("users").AddColumn("id", "Id")
-                .AddColumn("first", "FirstName", true);
+            Mapping.SetTable("users").SetColumn("id", "Id")
+                .SetColumn("first", "FirstName", true);
 
             var model = (MyModelMapped)resolver.CreateModelInstance(typeof(MyModelMapped));
 
@@ -432,9 +438,9 @@ namespace EasyDbLibTest
             };
             var reader = new MyReaderContainer(data);
 
-            Mapping.AddTable("users")
-                .AddColumn("id", "Id")
-                .AddColumn("first", "FirstName");
+            Mapping.SetTable("users")
+                .SetColumn("id", "Id")
+                .SetColumn("first", "FirstName");
 
             var result = (FakeModelMapped)resolver.Resolve(typeof(FakeModelMapped), reader, Mapping.GetTable("users"));
 

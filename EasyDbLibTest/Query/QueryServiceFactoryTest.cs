@@ -23,6 +23,8 @@ namespace EasyDbLibTest
         [TestMethod]
         public void TestRegisterNew()
         {
+           
+
             QueryServiceFactory.Set("MySql.Data.MySqlClient", new QueryService());
 
             Assert.IsTrue(QueryServiceFactory.Has("MySql.Data.MySqlClient"));
@@ -67,5 +69,8 @@ namespace EasyDbLibTest
         //public MyCustomQueryService()
         //    : base("`", "`")
         //{ }
+
+        // override methods ... example 
+
     }
 }

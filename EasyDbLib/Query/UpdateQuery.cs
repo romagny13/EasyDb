@@ -36,7 +36,7 @@ namespace EasyDbLib
             return this;
         }
 
-        public UpdateQuery Where(Condition condition)
+        public UpdateQuery Where(Check condition)
         {
             if (this.hasCondition) { throw new Exception("One clause where"); }
             this.condition = new ConditionAndParameterContainer(condition);

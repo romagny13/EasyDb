@@ -16,7 +16,11 @@ namespace EasyDbLibTest
         public int? age { get; set; }
         public string email { get; set; }
 
+        // one to many
         public List<PostLikeTable> PostList { get; set; }
+
+        // many to many
+        public List<PermissionLikeTable> PermissionList { get; set; }
     }
 
     public class User

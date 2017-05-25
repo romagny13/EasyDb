@@ -17,19 +17,32 @@ namespace EasyDbLibTest
                 using (var command = connection.CreateCommand())
                 {
                     connection.Open();
-                    command.CommandText = @"DROP TABLE IF EXISTS dbo.[posts];DROP TABLE IF EXISTS dbo.[categories];DROP TABLE IF EXISTS dbo.[users];;DROP TABLE IF EXISTS dbo.[UsersWithGuid];
-                                  CREATE TABLE [dbo].[users] (
-                                        [id]    INT         IDENTITY (1, 1) NOT NULL,
+                    command.CommandText = @"DROP TABLE IF EXISTS dbo.[users_permissions];DROP TABLE IF EXISTS dbo.[posts];DROP TABLE IF EXISTS dbo.[permissions];DROP TABLE IF EXISTS dbo.[categories];DROP TABLE IF EXISTS dbo.[users];;DROP TABLE IF EXISTS dbo.[UsersWithGuid];
+                                 CREATE TABLE [dbo].[users] (
+                                        [id]        INT         IDENTITY (1, 1) NOT NULL,
                                         [firstname] NCHAR (255) NOT NULL,
                                         [lastname]  NCHAR (255) NOT NULL,
-                                        [age]   INT         NULL,
-                                        [email] NCHAR (100) NULL,
-                                        PRIMARY KEY CLUSTERED ([Id] ASC)
+                                        [age]       INT         NULL,
+                                        [email]     NCHAR (100) NULL,
+                                        PRIMARY KEY CLUSTERED ([id] ASC)
                                     );
                                    CREATE TABLE [dbo].[categories] (
                                         [id]   INT         IDENTITY (1, 1) NOT NULL,
                                         [name] NCHAR (255) NOT NULL,
                                         PRIMARY KEY CLUSTERED ([id] ASC)
+                                    );
+                                    CREATE TABLE [dbo].[permissions] (
+                                        [id]          INT            IDENTITY (1, 1) NOT NULL,
+                                        [name]        NCHAR (255)    NOT NULL,
+                                        [description] NVARCHAR (MAX) NULL,
+                                        PRIMARY KEY CLUSTERED ([id] ASC)
+                                    );
+                                    CREATE TABLE [dbo].[users_permissions] (
+                                        [user_id]       INT NOT NULL,
+                                        [permission_id] INT NOT NULL,
+                                        PRIMARY KEY CLUSTERED ([user_id] ASC, [permission_id] ASC),
+                                        FOREIGN KEY ([user_id]) REFERENCES [dbo].[users] ([id]),
+                                        FOREIGN KEY ([permission_id]) REFERENCES [dbo].[permissions] ([id])
                                     );
                                     CREATE TABLE [dbo].[posts] (
                                         [id]          INT                   IDENTITY (1, 1) NOT NULL,
@@ -48,6 +61,11 @@ namespace EasyDbLibTest
                                         PRIMARY KEY CLUSTERED ([Id] ASC)
                                     );
 
+                                    insert into [permissions] (name,description) values('read posts','description read posts');
+                                    insert into [permissions] (name,description) values('create posts','description create posts');
+                                    insert into [permissions] (name,description) values('edit posts','description edit posts');
+                                    insert into [permissions] (name,description) values('delete posts','description delete posts');
+
                                     insert into [categories] (name) values('Web');
                                     insert into [categories] (name) values('Mobile');
 
@@ -60,7 +78,13 @@ namespace EasyDbLibTest
                                     insert into [posts] (title,content,user_id) values('Post 4','Content 4',2);
                                     insert into [posts] (title,content,user_id,category_id) values('Post 5','Content 5',1,2);
                                     insert into [posts] (title,content,user_id,category_id) values('Post 6','Content 6',1,2);
-                            ";
+                           
+                                    insert into [users_permissions] (user_id,permission_id) values(1,1);
+                                    insert into [users_permissions] (user_id,permission_id) values(1,2);
+                                    insert into [users_permissions] (user_id,permission_id) values(1,3);
+                                    insert into [users_permissions] (user_id,permission_id) values(1,4);
+                                    insert into [users_permissions] (user_id,permission_id) values(2,1);
+                                    ";
 
                     command.ExecuteNonQuery();
                     connection.Close();

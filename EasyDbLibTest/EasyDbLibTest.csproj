@@ -56,6 +56,7 @@
     <Compile Include="Core\ReadTest.cs" />
     <Compile Include="Core\NameCheckerTest.cs" />
     <Compile Include="InitDb.cs" />
+    <Compile Include="Mapping\IntermediateTableTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Core\ModelResolverTest.cs" />
     <Compile Include="Mapping\MappingTest.cs" />
@@ -63,8 +64,9 @@
     <Compile Include="Query\QueryServiceTest.cs" />
     <Compile Include="Query\ConditionAndParameterContainerTest.cs" />
     <Compile Include="Query\DeleteQueryTest.cs" />
-    <Compile Include="Query\SelectRelationOneTest.cs" />
-    <Compile Include="Query\SelectManyRelationTest.cs" />
+    <Compile Include="Query\OneRelationTest.cs" />
+    <Compile Include="Query\ManyRelationTest.cs" />
+    <Compile Include="Query\ManyToManyRelationTest.cs" />
     <Compile Include="Query\UpdateQueryTest.cs" />
     <Compile Include="Core\RelationTest.cs" />
     <Compile Include="Query\SelectQueryTest.cs" />
@@ -85,6 +87,10 @@
   <ItemGroup>
     <Content Include="DBTests.mdf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="DBTests_log.ldf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <DependentUpon>DBTests.mdf</DependentUpon>
     </Content>
     <Content Include="NorthWind.mdb">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
