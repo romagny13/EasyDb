@@ -8,7 +8,7 @@
 * **Mapping**
 * **No dependencies**. _Do not require to update the Model._
 * Code **Testable**
-* **Repository** Pattern recommended
+* **Repository** _Pattern recommended_
 
 ## Installation
 
