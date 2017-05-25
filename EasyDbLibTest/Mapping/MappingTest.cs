@@ -9,6 +9,170 @@ namespace EasyDbLibTest
     public class MappingTest
     {
 
+        // check
+
+        [TestMethod]
+        public void TestGet_WitoutTable_ThrowException()
+        {
+            bool failed = false;
+            try
+            {
+                Mapping.GetTable("notfound");
+            }
+            catch (Exception)
+            {
+                failed = true;
+            }
+
+            Assert.IsTrue(failed);
+        }
+
+        [TestMethod]
+        public void TestInvalidPropertyName_Fail()
+        {
+            bool failed = false;
+            try
+            {
+                Mapping.AddTable("users").AddColumn("firstname","inv@alid");
+            }
+            catch (Exception)
+            {
+                failed = true;
+            }
+
+            Assert.IsTrue(failed);
+        }
+
+        [TestMethod]
+        public void TestInvalidPropertyNameAndDbType_Fail()
+        {
+            bool failed = false;
+            try
+            {
+                Mapping.AddTable("users").AddColumn("firstname", "inv@alid",DbType.String);
+            }
+            catch (Exception)
+            {
+                failed = true;
+            }
+
+            Assert.IsTrue(failed);
+        }
+
+        [TestMethod]
+        public void TestValidPropertyName_Success()
+        {
+            bool failed = false;
+            try
+            {
+                Mapping.AddTable("users").AddColumn("firstname", "Valid", DbType.String);
+            }
+            catch (Exception)
+            {
+                failed = true;
+            }
+
+            Assert.IsFalse(failed);
+        }
+
+        [TestMethod]
+        public void TestInvalidPropertyName_WithPrimaryKey_Fail()
+        {
+            bool failed = false;
+            try
+            {
+                Mapping.AddTable("users").AddPrimaryKeyColumn("firstname", "inv@alid");
+            }
+            catch (Exception)
+            {
+                failed = true;
+            }
+
+            Assert.IsTrue(failed);
+        }
+
+        [TestMethod]
+        public void TestInvalidPropertyName_WithPrimaryKeyAndDbType_Fail()
+        {
+            bool failed = false;
+            try
+            {
+                Mapping.AddTable("users").AddPrimaryKeyColumn("firstname", "inv@alid", DbType.String);
+            }
+            catch (Exception)
+            {
+                failed = true;
+            }
+
+            Assert.IsTrue(failed);
+        }
+
+        [TestMethod]
+        public void TestInvalidPropertyName_WithValidPrimaryKey_Success()
+        {
+            bool failed = false;
+            try
+            {
+                Mapping.AddTable("users").AddPrimaryKeyColumn("firstname", "valid", DbType.String);
+            }
+            catch (Exception)
+            {
+                failed = true;
+            }
+
+            Assert.IsFalse(failed);
+        }
+
+        [TestMethod]
+        public void TestInvalidPropertyName_WithForeignKey_Fail()
+        {
+            bool failed = false;
+            try
+            {
+                Mapping.AddTable("posts").AddForeignKeyColumn("user_id", "inv@alid","users","id");
+            }
+            catch (Exception)
+            {
+                failed = true;
+            }
+
+            Assert.IsTrue(failed);
+        }
+
+        [TestMethod]
+        public void TestInvalidPropertyName_WithForeignKeyAndDbType_Fail()
+        {
+            bool failed = false;
+            try
+            {
+                Mapping.AddTable("posts").AddForeignKeyColumn("user_id", "inv@alid", "users", "id", DbType.Int16);
+            }
+            catch (Exception)
+            {
+                failed = true;
+            }
+
+            Assert.IsTrue(failed);
+        }
+
+        [TestMethod]
+        public void TestInvalidPropertyName_WithValidForeignKey_Success()
+        {
+            bool failed = false;
+            try
+            {
+                Mapping.AddTable("posts").AddForeignKeyColumn("user_id", "valid", "users", "id", DbType.Int16);
+            }
+            catch (Exception)
+            {
+                failed = true;
+            }
+
+            Assert.IsFalse(failed);
+        }
+
+        // has
+
         [TestMethod]
         public void TestAddMapping_HasTable()
         {

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace EasyDbLib
 {
@@ -25,6 +26,8 @@ namespace EasyDbLib
 
         public static Table GetTable(string tableName)
         {
+            if (!HasTable(tableName)) { throw new Exception("No table registered for " + tableName); }
+
             return container[tableName];
         }
     }

@@ -11,19 +11,22 @@ namespace EasyDbLib
         protected IModelResolver modelResolver;
         protected EasyDb easyDbInstance;
         protected Type modelType;
+
         protected Table modelMapping;
+        public Table Mapping => this.modelMapping;
+
         protected int? limit;
         protected ConditionAndParameterContainer condition;
         protected string[] statements;
         protected string[] sorts;
+        protected bool hasLimit;
         protected bool hasSorts;
         protected bool hasCondition;
         protected bool hasStatements;
         protected bool hasOneRelations;
         protected bool hasManyRelations;
         protected Dictionary<Type,IRelation> oneRelations;
-        private Dictionary<Type,IRelation> manyRelations;
-
+        private Dictionary<Type,IManyRelation> manyRelations;
 
         public SelectQuery(IQueryService queryService, EasyDb easyDbInstance, Type modelType, Table mapping)
             : this(new ModelResolver(), queryService, easyDbInstance, modelType, mapping)
@@ -32,7 +35,7 @@ namespace EasyDbLib
         public SelectQuery(IModelResolver modelResolver, IQueryService queryService, EasyDb easyDbInstance, Type modelType, Table mapping)
         {
             this.oneRelations = new Dictionary<Type, IRelation>();
-            this.manyRelations = new Dictionary<Type, IRelation>();
+            this.manyRelations = new Dictionary<Type, IManyRelation>();
             this.statements = new string[] { };
             this.modelResolver = modelResolver;
             this.queryService = queryService;
@@ -43,7 +46,9 @@ namespace EasyDbLib
 
         public SelectQuery<T> Top(int limit)
         {
+            if (this.hasLimit) { throw new Exception("Limit alerady defined"); }
             this.limit = limit;
+            this.hasLimit = true;
             return this;
         }
 
@@ -66,14 +71,24 @@ namespace EasyDbLib
         public SelectQuery<T> OrderBy(params string[] sorts)
         {
             if (this.hasSorts) { throw new Exception("One clause order by"); }
+            if (sorts.Length == 0) { throw new Exception("No column provided for order by"); }
             this.sorts = sorts;
             this.hasSorts = true;
             return this;
         }
 
+        protected void CheckPropertyName(string propertyName)
+        {
+            if (!NameChecker.CheckPropertyName(propertyName))
+            {
+                throw new Exception("Invalid property name " + propertyName);
+            }
+        }
+
         public SelectQuery<T> HasOne<TRelation>(string propertyToFill, Table relationMapping)
         {
-            this.oneRelations[typeof(TRelation)] = new OneRelation<TRelation>(this.queryService, this.modelResolver, this.easyDbInstance, propertyToFill, this.modelMapping, relationMapping);
+            CheckPropertyName(propertyToFill);
+            this.oneRelations[typeof(TRelation)] = new OneRelation<TRelation>(this.queryService, this.modelResolver, this.easyDbInstance, propertyToFill, this.modelType, this.modelMapping, relationMapping);
             this.hasOneRelations = true;
             return this;
         }
@@ -83,24 +98,29 @@ namespace EasyDbLib
             return this.oneRelations.ContainsKey(typeof(TRelation));
         }
 
-        public bool HasManyRelation<TRelation>()
-        {
-            return this.manyRelations.ContainsKey(typeof(TRelation));
-        }
-
         public IRelation GetOneRelation<TRelation>()
         {
+            if (!this.HasOneRelation<TRelation>()) { throw new Exception("No relation registered for " + typeof(TRelation).Name + " with the select query on " + this.modelMapping.TableName); }
+
             return this.oneRelations[typeof(TRelation)];
         }
 
-        public IRelation GetManyRelation<TRelation>()
+        public bool HasManyRelation<TManyRelation>()
         {
-            return this.manyRelations[typeof(TRelation)];
+            if (!this.HasManyRelation<TManyRelation>()) { throw new Exception("No many relation registered for " + typeof(TManyRelation).Name + " with the select query on " + this.modelMapping.TableName); }
+
+            return this.manyRelations.ContainsKey(typeof(TManyRelation));
         }
 
-        public SelectQuery<T> HasMany<TRelation>(string propertyListToFill, Table relationMapping)
+        public IManyRelation GetManyRelation<TManyRelation>()
         {
-            this.manyRelations[typeof(TRelation)] = new ManyRelation<TRelation>(this.queryService, this.modelResolver, this.easyDbInstance, propertyListToFill, this.modelMapping, relationMapping);
+            return this.manyRelations[typeof(TManyRelation)];
+        }
+
+        public SelectQuery<T> HasMany<TManyRelation>(string propertyListToFill, Table relationMapping)
+        {
+            CheckPropertyName(propertyListToFill);
+            this.manyRelations[typeof(TManyRelation)] = new ManyRelation<TManyRelation>(this.queryService, this.modelResolver, this.easyDbInstance, propertyListToFill, this.modelType, this.modelMapping, relationMapping);
             this.hasManyRelations = true;
             return this;
         }
@@ -113,8 +133,7 @@ namespace EasyDbLib
                    + this.queryService.GetOrderBy(this.sorts);
         }
 
-
-        protected EasyDbCommand CreateCommand()
+        public EasyDbCommand CreateCommand()
         {
             var query = this.GetQuery();
 
@@ -138,7 +157,6 @@ namespace EasyDbLib
             }
             return mainCommand;
         }
-
    
         protected async Task FetchModel(T model)
         {

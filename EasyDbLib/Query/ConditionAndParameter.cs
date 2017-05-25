@@ -3,19 +3,9 @@
     public class ConditionAndParameter
     {
         public bool IsConditionOp { get; }
-
         public string Column { get; }
-
-        // only op require an unique  parameter name
-        // "=@id" or "=@id2"
-        // " like '" + condition.Value + "'" 
-        // " between " + condition.Value1 + " and " + condition.Value2
         public string ValueString { get; }
-
-        // @id @id2
-        public string ParameterName { get; }
-        
-        // id => 10
+        public string ParameterName { get; } // @id @id2
         public object ParameterValue { get; }
 
         public ConditionAndParameter(string column, string parameterName, string valueString, object parameterValue, bool isConditionOp)

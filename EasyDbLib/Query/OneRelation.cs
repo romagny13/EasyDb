@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace EasyDbLib
@@ -8,15 +9,25 @@ namespace EasyDbLib
         protected IQueryService queryService;
         protected IModelResolver modelResolver;
         protected EasyDb easyDbInstance;
-        protected string propertyToFill;
+
         protected Table modelMapping;
+        protected Type modelType;
+       
         protected Table relationMapping;
+        public Table Mapping => this.relationMapping;
+
+        protected string propertyToFill;
+        public string PropertyToFill => this.propertyToFill;
+
+        protected ForeignKeyColumn[] foreignKeys;
+        public ForeignKeyColumn[] ForeignKeys => this.foreignKeys;
 
         public OneRelation(
             IQueryService queryService, 
             IModelResolver modelResolver,
             EasyDb easyDbInstance, 
             string propertyToFill, 
+            Type modelType,
             Table modelMapping,
             Table relationMapping)
         {
@@ -24,30 +35,40 @@ namespace EasyDbLib
             this.modelResolver = modelResolver;
             this.easyDbInstance = easyDbInstance;
             this.propertyToFill = propertyToFill;
+            this.modelType = modelType;
             this.modelMapping = modelMapping;
             this.relationMapping = relationMapping;
+            this.foreignKeys = this.GetForeignKeys();
         }
 
-        public ForeignKeyColumn[] GetForeignKeys()
+        protected ForeignKeyColumn[] GetForeignKeys()
         {
-           return  this.modelMapping.GetForeignKeys(this.relationMapping.TableName);
+           var foreignKeys = this.modelMapping.GetForeignKeys(this.relationMapping.TableName);
+           if (foreignKeys.Length == 0) { throw new Exception("No foreign keys provided for the relation one with " + this.relationMapping.TableName + " on " + this.modelMapping.TableName + ". Cannot resolve the query string."); }
+           return foreignKeys;
         }
 
-        public string GetQuery(ForeignKeyColumn[] foreignKeys)
+        public string GetQuery()
         {
+
             // select * from table where pk = @fk and pk2=@fk2
             return this.queryService.GetSelect(this.relationMapping)
                    + this.queryService.GetFrom(this.relationMapping.TableName)
-                   + this.queryService.GetWhereHasOne(foreignKeys);
+                   + this.queryService.GetWhereHasOne(this.foreignKeys);
+        }
+
+        protected void CheckModelType(object model)
+        {
+            if(model.GetType() != this.modelType)
+            {
+                throw new Exception("Invalid model type " + model.GetType().Name + " for the relation one . Wait for " + this.modelType.Name);
+            }
         }
 
         public EasyDbCommand CreateCommand(object model)
         {
-            var foreignKeys = this.GetForeignKeys();
-            if (foreignKeys.Length == 0) { throw new Exception("No foreign key defined in \"" + this.modelMapping.TableName + "\" for \"" + this.relationMapping.TableName + "\" (mapping)"); }
-
-            // get query
-            var relationQuery = this.GetQuery(foreignKeys);
+            this.CheckModelType(model);
+            var relationQuery = this.GetQuery();
 
             // create command
             var command = this.easyDbInstance.CreateCommand(relationQuery);
@@ -57,10 +78,11 @@ namespace EasyDbLib
             foreach (var foreignKey in foreignKeys)
             {
                 var parameterName = this.queryService.GetParameterName(foreignKey.ColumnName);
-                var property = this.modelResolver.GetPropertyInfo(type, foreignKey.PropertyName);
-                if (property == null) { throw new Exception("No property found for " + foreignKey.PropertyName  + " in " + type.Name); }
 
-                var value = this.modelResolver.GetValue(model, property);
+                var propertyInfo = this.modelResolver.GetPropertyInfo(type, foreignKey.PropertyName);
+                if (propertyInfo == null) { throw new Exception("Property " + foreignKey.PropertyName + " not found in " + this.modelType.Name); }
+
+                var value = this.modelResolver.GetValue(model, propertyInfo);
                 if (foreignKey.DbType.HasValue)
                 {
                     command.AddParameter(parameterName, value, foreignKey.DbType.Value);
@@ -81,12 +103,11 @@ namespace EasyDbLib
 
             // resolve property to fill
             var propertyInfo = this.modelResolver.GetPropertyInfo(model.GetType(), this.propertyToFill);
-            if (propertyInfo == null) { throw new Exception("No property found for the relation one with the property to fill " + this.propertyToFill + " in " + model.GetType().Name); }
+            if (propertyInfo == null) { throw new Exception("Property " + this.propertyToFill + " not found in " + this.modelType.Name); }
 
             this.modelResolver.CheckAndSetValue(model, this.propertyToFill, propertyInfo, relationValue);
         }
 
     }
-
 
 }

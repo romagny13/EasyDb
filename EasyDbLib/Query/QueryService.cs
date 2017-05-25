@@ -67,7 +67,7 @@ namespace EasyDbLib
                     }
                 }
 
-                if (mapping.Columns.Count > 0)
+                if (result.Count > 0)
                 {
                     return " " + string.Join(",", result);
                 }
@@ -137,12 +137,12 @@ namespace EasyDbLib
             return string.Join(",", result);
         }
 
-        public string GetSet(Dictionary<string, object> columnValues)
+        public string GetSet(string[] columns)
         {
             var result = new List<string>();
-            foreach (var columnValue in columnValues)
+            foreach (var column in columns)
             {
-                result.Add(this.FormatTableAndColumn(columnValue.Key) + "=" + this.GetTypedValue(columnValue.Value));
+                result.Add(this.FormatTableAndColumn(column) + "=" + this.GetParameterName(column));
             }
             return string.Join(",", result);
         }
@@ -203,7 +203,7 @@ namespace EasyDbLib
             var result = new List<string>();
             foreach (var foreignKey in foreignKeys)
             {
-                result.Add(this.FormatTableAndColumn(foreignKey.ColumnName) + "=" + this.GetParameterName(foreignKey.ColumnName));
+                result.Add(this.FormatTableAndColumn(foreignKey.ColumnName) + "=" + this.GetParameterName(foreignKey.PrimaryKeyReferenced));
             }
             return " where " + string.Join(" and ", result);
         }
@@ -213,16 +213,16 @@ namespace EasyDbLib
         public string GetInsertInto(string table, string[] columns, bool lastInsertedId)
         {
             var result = "insert into " + this.FormatTableAndColumn(table) + " (" + this.GetColumns(columns, false) + ")";
-            if (lastInsertedId) { result += " output INSERTED.Id"; }
+            if (lastInsertedId) { result += " output inserted.id"; }
             result += " values (" + this.GetParameters(columns) + ")";
             return result;
         }
 
         // update
 
-        public string GetUpdate(string table, Dictionary<string, object> columnValues, ConditionAndParameterContainer condition)
+        public string GetUpdate(string table, string[] columns, ConditionAndParameterContainer condition)
         {
-            return "update " + this.FormatTableAndColumn(table) + " set " + this.GetSet(columnValues) + this.GetWhere(condition);
+            return "update " + this.FormatTableAndColumn(table) + " set " + this.GetSet(columns) + this.GetWhere(condition);
         }
 
         // delete

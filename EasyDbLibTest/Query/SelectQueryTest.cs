@@ -10,736 +10,452 @@ namespace EasyDbLibTest
     [TestClass]
     public class SelectQueryTest
     {
-        private static string sqlServerConnectionString =
-                  @"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=C:\Users\romag\Documents\Visual Studio 2017\Projects\EasyDbLib\EasyDbLibTest\SqlServerDb.mdf;Integrated Security=True;Connect Timeout=20"
-              ;
-
-        private static string sqlServerProviderName = "System.Data.SqlClient";
-
-        // build query
-
-        [TestMethod]
-        public void TestBuildQuery()
+        [ClassInitialize()]
+        public static void ClassInit(TestContext context)
         {
-            EasyDb.Default.SetConnectionSettings(sqlServerConnectionString, sqlServerProviderName);
-
-            Mapping.AddTable("Users");
-
-            var result = EasyDb.Default
-                    .Select<User>(Mapping.GetTable("Users"))
-                    .GetQuery();
-
-            Assert.AreEqual("select * from [Users]", result);
+            InitDb.CreateDbTest();
         }
 
-
-        [TestMethod]
-        public void TestBuildQuery_WithCondition()
+        public EasyDb GetDb()
         {
-            EasyDb.Default.SetConnectionSettings(sqlServerConnectionString, sqlServerProviderName);
-
-            Mapping.AddTable("Users");
-
-            var result = EasyDb.Default
-                    .Select<User>(Mapping.GetTable("Users"))
-                    .Where(Condition.Op("id", 12))
-                    .GetQuery();
-
-            Assert.AreEqual("select * from [Users] where [id]=@id", result);
+            var db = new EasyDb();
+            db.SetConnectionStringSettings(InitDb.SqlConnectionString, InitDb.SqlProviderName);
+            return db;
         }
 
-        [TestMethod]
-        public void TestBuildQuery_WithCondition_FormatColumns()
-        {
-            EasyDb.Default.SetConnectionSettings(sqlServerConnectionString, sqlServerProviderName);
-
-            Mapping.AddTable("Users");
-
-            var result = EasyDb.Default
-                    .Select<User>(Mapping.GetTable("Users"))
-                    .Where(Condition.Op("posts.id", 12))
-                    .GetQuery();
-
-            Assert.AreEqual("select * from [Users] where [posts].[id]=@id", result);
-        }
+        // check
 
         [TestMethod]
-        public void TestBuildQuery_WithCondition_AreUniques()
-        {
-            EasyDb.Default.SetConnectionSettings(sqlServerConnectionString, sqlServerProviderName);
-
-            Mapping.AddTable("Users");
-
-            var result = EasyDb.Default
-                    .Select<User>(Mapping.GetTable("Users"))
-                    .Where(Condition.Op("id", 12).Or(Condition.Op("id",12)))
-                    .GetQuery();
-
-            Assert.AreEqual("select * from [Users] where [id]=@id or [id]=@id2", result);
-        }
-
-        [TestMethod]
-        public void TestBuildQuery_WithColumns()
-        {
-            EasyDb.Default.SetConnectionSettings(sqlServerConnectionString, sqlServerProviderName);
-
-            Mapping.AddTable("Users")
-                .AddColumn("Name", "Name")
-                 .AddColumn("Email", "Email");
-
-            var result = EasyDb.Default
-                    .Select<User>(Mapping.GetTable("Users"))
-                    .Where(Condition.Op("id", 12))
-                    .GetQuery();
-
-            Assert.AreEqual("select [Name],[Email] from [Users] where [id]=@id", result);
-        }
-
-        [TestMethod]
-        public void TestBuildQuery_WithPkAndColumns_ReturnsColumns()
-        {
-            EasyDb.Default.SetConnectionSettings(sqlServerConnectionString, sqlServerProviderName);
-
-            Mapping.AddTable("Users")
-                .AddPrimaryKeyColumn("Id", "Id")
-                .AddColumn("Name", "Name");
-
-            var result = EasyDb.Default
-                    .Select<User>(Mapping.GetTable("Users"))
-                    .Where(Condition.Op("id", 12))
-                    .GetQuery();
-
-            Assert.AreEqual("select [Id],[Name] from [Users] where [id]=@id", result);
-        }
-
-        [TestMethod]
-        public void TestBuildQuery_WithOnlyPk_ReturnsAll()
-        {
-            EasyDb.Default.SetConnectionSettings(sqlServerConnectionString, sqlServerProviderName);
-
-            Mapping.AddTable("Users")
-                .AddPrimaryKeyColumn("Id", "Id");
-
-            var result = EasyDb.Default
-                    .Select<User>(Mapping.GetTable("Users"))
-                    .Where(Condition.Op("id", 12))
-                    .GetQuery();
-
-            Assert.AreEqual("select * from [Users] where [id]=@id", result);
-        }
-
-        // read one 
-
-
-        [TestMethod]
-        public async Task TestSelectOne()
-        {
-            EasyDb.Default.SetConnectionSettings(sqlServerConnectionString, sqlServerProviderName);
-
-            Mapping.AddTable("Users");
-
-
-            var result = await EasyDb.Default
-                   .Select<User>(Mapping.GetTable("Users"))
-                   .Where(Condition.Op("id",12))
-                   .ReadOneAsync();
-
-            Assert.AreEqual(12, result.Id);
-            Assert.AreEqual("Pat", result.Name);
-            Assert.AreEqual(null, result.Email);
-            Assert.AreEqual(20, result.Age);
-        }
-
-
-        [TestMethod]
-        public async Task TestSelectOne_ReturnsTheFirstUserFound()
-        {
-            EasyDb.Default.SetConnectionSettings(sqlServerConnectionString, sqlServerProviderName);
-
-            Mapping.AddTable("Users");
-
-
-            var result = await EasyDb.Default
-                   .Select<User>(Mapping.GetTable("Users"))
-                   .ReadOneAsync();
-
-            Assert.AreEqual(11, result.Id);
-            Assert.AreEqual("Marie", result.Name);
-            Assert.AreEqual("marie@mail.com", result.Email);
-            Assert.AreEqual(null, result.Age);
-        }
-
-        // get relation one
-
-        [TestMethod]
-        public async Task TestRelationZeroOne()
-        {
-            EasyDb.Default.SetConnectionSettings(sqlServerConnectionString, sqlServerProviderName);
-
-            Mapping.AddTable("categories")
-                .AddPrimaryKeyColumn("id", "Id")
-                .AddColumn("name","Name");
-
-            Mapping.AddTable("posts")
-                .AddPrimaryKeyColumn("Id", "Id")
-                .AddColumn("title","Title")
-                .AddColumn("content","Content")
-                .AddForeignKeyColumn("category_id", "CategoryId", "categories", "id");
-
-            var result = await EasyDb.Default
-                   .Select<Post>(Mapping.GetTable("posts"))
-                   .Where(Condition.Op("id", 1))
-                   .HasOne<Category>("Category", Mapping.GetTable("categories"))
-                   .ReadOneAsync();
-
-            Assert.IsNotNull(result.Category);
-            Assert.AreEqual(2,result.Category.Id);
-            Assert.AreEqual("Mobile", result.Category.Name);
-        }
-
-        [TestMethod]
-        public async Task TestRelationZeroOne_ReturnsNull()
-        {
-            EasyDb.Default.SetConnectionSettings(sqlServerConnectionString, sqlServerProviderName);
-
-            Mapping.AddTable("categories").AddPrimaryKeyColumn("id", "id");
-
-            Mapping.AddTable("posts")
-                .AddPrimaryKeyColumn("Id", "Id")
-                .AddForeignKeyColumn("category_id", "CategoryId", "categories", "id");
-
-            var result = await EasyDb.Default
-                   .Select<Post>(Mapping.GetTable("posts"))
-                   .Where(Condition.Op("id", 2))
-                   .HasOne<Category>("Category", Mapping.GetTable("categories"))
-                   .ReadOneAsync();
-
-            Assert.IsNull(result.Category);
-        }
-
-        [TestMethod]
-        public async Task TestRelationOne_FailedIfNoForeignKeyDefinedInMapping()
+        public void TestOneLimit()
         {
             bool failed = false;
-            EasyDb.Default.SetConnectionSettings(sqlServerConnectionString, sqlServerProviderName);
+            var db = this.GetDb();
 
-            Mapping.AddTable("Users")
-               .AddPrimaryKeyColumn("Id", "Id");
-
-            Mapping.AddTable("categories")
-                .AddPrimaryKeyColumn("id", "Id")
-                .AddColumn("name", "Name");
-
-            Mapping.AddTable("posts")
-                .AddPrimaryKeyColumn("Id", "Id")
-                .AddColumn("title", "Title")
-                .AddColumn("content", "Content")
-                .AddForeignKeyColumn("category_id", "CategoryId", "categories", "id");
+            Mapping.AddTable("users");
 
             try
             {
-                var result = await EasyDb.Default
-                                 .Select<Post>(Mapping.GetTable("posts"))
-                                 .Where(Condition.Op("id", 1))
-                                 .HasOne<User>("User", Mapping.GetTable("Users"))
-                                 .ReadOneAsync();
+                var result = db
+                    .Select<UserLikeTable>(Mapping.GetTable("users"))
+                    .Top(10)
+                    .Top(20)
+                    .GetQuery();
             }
             catch (Exception)
             {
                 failed = true;
             }
-
-
             Assert.IsTrue(failed);
         }
 
-        // get multiples relations
+        [TestMethod]
+        public void TestOneStatements()
+        {
+            bool failed = false;
+            var db = this.GetDb();
+
+            Mapping.AddTable("users");
+
+            try
+            {
+                var result = db
+                    .Select<UserLikeTable>(Mapping.GetTable("users"))
+                    .Statements("distinct")
+                    .Statements("high_priority")
+                    .GetQuery();
+            }
+            catch (Exception)
+            {
+                failed = true;
+            }
+            Assert.IsTrue(failed);
+        }
 
         [TestMethod]
-        public async Task TestRelationOnes()
+        public void TestOneClauseWhere()
         {
-            EasyDb.Default.SetConnectionSettings(sqlServerConnectionString, sqlServerProviderName);
+            bool failed = false;
+            var db = this.GetDb();
 
-            Mapping.AddTable("Users")
-               .AddPrimaryKeyColumn("Id", "Id");
+            Mapping.AddTable("users");
 
-            Mapping.AddTable("categories")
-                .AddPrimaryKeyColumn("id", "Id")
-                .AddColumn("name", "Name");
-
-            Mapping.AddTable("posts")
-                .AddPrimaryKeyColumn("Id", "Id")
-                .AddColumn("title", "Title")
-                .AddColumn("content", "Content")
-                .AddForeignKeyColumn("category_id", "CategoryId", "categories", "id")
-                .AddForeignKeyColumn("user_id","UserId","Users","Id");
-
-            var result = await EasyDb.Default
-                   .Select<Post>(Mapping.GetTable("posts"))
-                   .Where(Condition.Op("id", 1))
-                   .HasOne<Category>("Category", Mapping.GetTable("categories"))
-                   .HasOne<User>("User",Mapping.GetTable("Users"))
-                   .ReadOneAsync();
-
-            Assert.IsNotNull(result.Category);
-            Assert.AreEqual(2, result.Category.Id);
-            Assert.AreEqual("Mobile", result.Category.Name);
-
-            Assert.IsNotNull(result.User);
-            Assert.AreEqual(11, result.User.Id);
-            Assert.AreEqual("Marie", result.User.Name);
-            Assert.AreEqual("marie@mail.com", result.User.Email);
-            Assert.AreEqual(null, result.User.Age);
+            try
+            {
+                var result = db
+                    .Select<UserLikeTable>(Mapping.GetTable("users"))
+                    .Where(Condition.Op("id", 2))
+                    .Where(Condition.Op("id", 3))
+                    .GetQuery();
+            }
+            catch (Exception)
+            {
+                failed = true;
+            }
+            Assert.IsTrue(failed);
         }
+
+        [TestMethod]
+        public void TestOneOrderBy()
+        {
+            bool failed = false;
+            var db = this.GetDb();
+
+            Mapping.AddTable("users");
+
+            try
+            {
+                var result = db
+                    .Select<UserLikeTable>(Mapping.GetTable("users"))
+                    .OrderBy("id")
+                    .OrderBy("firstname")
+                    .GetQuery();
+            }
+            catch (Exception)
+            {
+                failed = true;
+            }
+            Assert.IsTrue(failed);
+        }
+
+        // build query
+
+        [TestMethod]
+        public void TestQuery()
+        {
+
+            var db = this.GetDb();
+
+            Mapping.AddTable("users");
+
+            var result = db
+                    .Select<UserLikeTable>(Mapping.GetTable("users"))
+                    .GetQuery();
+
+            Assert.AreEqual("select * from [users]", result);
+        }
+
+        // columns
+
+        [TestMethod]
+        public void TestQuery_WithPrimaryKey_ReturnsAllColumns()
+        {
+
+            var db = this.GetDb();
+
+            Mapping.AddTable("users").AddPrimaryKeyColumn("id","id");
+
+            var result = db
+                    .Select<UserLikeTable>(Mapping.GetTable("users"))
+                    .GetQuery();
+
+            Assert.AreEqual("select * from [users]", result);
+        }
+
+        [TestMethod]
+        public void TestQuery_WithForeignKey_ReturnsAllColumns()
+        {
+            var db = this.GetDb();
+
+            Mapping
+                .AddTable("posts")
+                .AddForeignKeyColumn("user_id", "UserId","users","id");
+
+            var result = db
+                    .Select<UserLikeTable>(Mapping.GetTable("posts"))
+                    .GetQuery();
+
+            Assert.AreEqual("select * from [posts]", result);
+        }
+
+        [TestMethod]
+        public void TestQuery_WithColumns_ReturnsColumns()
+        {
+            var db = this.GetDb();
+
+            Mapping
+                .AddTable("posts")
+                .AddColumn("title","Title")
+                .AddColumn("content","Content")
+                .AddForeignKeyColumn("user_id", "UserId", "users", "id");
+
+            var result = db
+                    .Select<UserLikeTable>(Mapping.GetTable("posts"))
+                    .GetQuery();
+
+            Assert.AreEqual("select [title],[content],[user_id] from [posts]", result);
+        }
+
+        [TestMethod]
+        public void TestQuery_IgnoreColumns()
+        {
+            var db = this.GetDb();
+
+            Mapping
+                .AddTable("posts")
+                .AddColumn("title", "Title",true)
+                .AddColumn("content", "Content")
+                .AddForeignKeyColumn("user_id", "UserId", "users", "id");
+
+            var result = db
+                    .Select<UserLikeTable>(Mapping.GetTable("posts"))
+                    .GetQuery();
+
+            Assert.AreEqual("select [content],[user_id] from [posts]", result);
+        }
+
+        [TestMethod]
+        public void TestQuery_IfAllColumnsAreIgnore8returnsAll()
+        {
+            var db = this.GetDb();
+
+            Mapping
+                .AddTable("posts")
+                .AddColumn("title", "Title", true)
+                .AddColumn("content", "Content", true)
+                .AddForeignKeyColumn("user_id", "UserId", "users", "id",true);
+
+            var result = db
+                    .Select<UserLikeTable>(Mapping.GetTable("posts"))
+                    .GetQuery();
+
+            Assert.AreEqual("select * from [posts]", result);
+        }
+
+        // top
+
+        [TestMethod]
+        public void TestQuery_WithTop()
+        {
+
+            var db = this.GetDb();
+
+            Mapping.AddTable("users").AddPrimaryKeyColumn("id", "id");
+
+            var result = db
+                    .Select<UserLikeTable>(Mapping.GetTable("users"))
+                    .Top(10)
+                    .GetQuery();
+
+            Assert.AreEqual("select top 10 * from [users]", result);
+        }
+
+        [TestMethod]
+        public void TestQuery_WithTopAndColumns()
+        {
+
+            var db = this.GetDb();
+
+            Mapping.AddTable("users")
+                .AddPrimaryKeyColumn("id", "id")
+                .AddColumn("firstname","FirstName")
+                .AddColumn("lastname", "LastName");
+
+            var result = db
+                    .Select<UserLikeTable>(Mapping.GetTable("users"))
+                    .Top(10)
+                    .GetQuery();
+
+            Assert.AreEqual("select top 10 [id],[firstname],[lastname] from [users]", result);
+        }
+
+        // where
+
+        [TestMethod]
+        public void TestQuery_WithWhere()
+        {
+            var db = this.GetDb();
+
+            Mapping.AddTable("users");
+
+            var result = db
+                    .Select<UserLikeTable>(Mapping.GetTable("users"))
+                    .Where(Condition.Op("id",1))
+                    .GetQuery();
+
+            Assert.AreEqual("select * from [users] where [id]=@id", result);
+        }
+
+        [TestMethod]
+        public void TestQuery_WithWhereConditions()
+        {
+            var db = this.GetDb();
+
+            Mapping.AddTable("users");
+
+            var result = db
+                    .Select<UserLikeTable>(Mapping.GetTable("users"))
+                    .Where(Condition.Op("id", 1).Or(Condition.Op("id",2)))
+                    .GetQuery();
+
+            Assert.AreEqual("select * from [users] where [id]=@id or [id]=@id2", result);
+        }
+
+        // order by
+
+        [TestMethod]
+        public void TestQuery_WithOrderyBy()
+        {
+            var db = this.GetDb();
+
+            Mapping.AddTable("users");
+
+            var result = db
+                    .Select<UserLikeTable>(Mapping.GetTable("users"))
+                    .OrderBy("firstname")
+                    .GetQuery();
+
+            Assert.AreEqual("select * from [users] order by [firstname]", result);
+        }
+
+        [TestMethod]
+        public void TestQuery_WitOrderByhMultiple()
+        {
+            var db = this.GetDb();
+
+            Mapping.AddTable("users");
+
+            var result = db
+                    .Select<UserLikeTable>(Mapping.GetTable("users"))
+                    .OrderBy("firstname desc", "lastname")
+                    .GetQuery();
+
+            Assert.AreEqual("select * from [users] order by [firstname] desc,[lastname]", result);
+        }
+
+        // create command
+
+        [TestMethod]
+        public void TestCreateCommand()
+        {
+            var db = this.GetDb();
+
+            Mapping.AddTable("users");
+
+            var result = db
+                    .Select<UserLikeTable>(Mapping.GetTable("users"))
+                      .Where(Condition.Op("id", 1).Or(Condition.Op("id", 2)))
+                    .CreateCommand();
+
+            Assert.AreEqual("select * from [users] where [id]=@id or [id]=@id2", result.Command.CommandText);
+
+            Assert.AreEqual(2, result.Command.Parameters.Count);
+
+            Assert.AreEqual("@id", result.Command.Parameters[0].ParameterName);
+            Assert.AreEqual(1, result.Command.Parameters[0].Value);
+
+            Assert.AreEqual("@id2", result.Command.Parameters[1].ParameterName);
+            Assert.AreEqual(2, result.Command.Parameters[1].Value);
+        }
+
+
+        // read one 
+
+        [TestMethod]
+        public async Task TestReadOneAsync()
+        {
+            var db = this.GetDb();
+
+            Mapping.AddTable("users");
+
+            var result = await db
+                .Select<UserLikeTable>(Mapping.GetTable("users"))
+                .Where(Condition.Op("id", 1))
+                .ReadOneAsync();
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(1, result.id);
+            Assert.AreEqual("Marie", result.firstname);
+            Assert.AreEqual("Bellin", result.lastname);
+            Assert.AreEqual(null, result.age);
+            Assert.AreEqual("marie@domain.com", result.email);
+        }
+
+        [TestMethod]
+        public async Task TestReadOneAsync_WithMapping()
+        {
+            var db = this.GetDb();
+
+            Mapping.AddTable("users")
+                .AddPrimaryKeyColumn("id", "Id")
+                .AddColumn("firstname", "FirstName")
+                .AddColumn("lastname", "LastName")
+                .AddColumn("age", "Age")
+                .AddColumn("email", "Email");
+
+            var result = await db
+                .Select<User>(Mapping.GetTable("users"))
+                .Where(Condition.Op("id", 1))
+                .ReadOneAsync();
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(1, result.Id);
+            Assert.AreEqual("Marie", result.FirstName);
+            Assert.AreEqual("Bellin", result.LastName);
+            Assert.AreEqual(null, result.Age);
+            Assert.AreEqual("marie@domain.com", result.Email);
+        }
+
+        // read all
 
         [TestMethod]
         public async Task TestReadAllAsync()
         {
-            EasyDb.Default.SetConnectionSettings(sqlServerConnectionString, sqlServerProviderName);
+            var db = this.GetDb();
 
-            Mapping.AddTable("Users")
-               .AddPrimaryKeyColumn("Id", "Id");
+            Mapping.AddTable("users");
 
-            Mapping.AddTable("categories")
+            var result = await db
+                .Select<UserLikeTable>(Mapping.GetTable("users"))
+                .ReadAllAsync();
+
+            Assert.AreEqual(2, result.Count);
+
+            Assert.AreEqual(1, result[0].id);
+            Assert.AreEqual("Marie", result[0].firstname);
+            Assert.AreEqual("Bellin", result[0].lastname);
+            Assert.AreEqual(null, result[0].age);
+            Assert.AreEqual("marie@domain.com", result[0].email);
+
+            Assert.AreEqual(2, result[1].id);
+            Assert.AreEqual("Pat", result[1].firstname);
+            Assert.AreEqual("Prem", result[1].lastname);
+            Assert.AreEqual(30, result[1].age);
+            Assert.AreEqual(null, result[1].email);
+        }
+
+        [TestMethod]
+        public async Task TestReadAllAsync_WithMapping()
+        {
+            var db = this.GetDb();
+
+            Mapping.AddTable("users")
                 .AddPrimaryKeyColumn("id", "Id")
-                .AddColumn("name", "Name");
+                .AddColumn("firstname", "FirstName")
+                .AddColumn("lastname", "LastName")
+                .AddColumn("age", "Age")
+                .AddColumn("email", "Email");
 
-            Mapping.AddTable("posts")
-                .AddPrimaryKeyColumn("Id", "Id")
-                .AddColumn("title", "Title")
-                .AddColumn("content", "Content")
-                .AddForeignKeyColumn("category_id", "CategoryId", "categories", "id")
-                .AddForeignKeyColumn("user_id", "UserId", "Users", "Id");
+            var result = await db
+                .Select<User>(Mapping.GetTable("users"))
+                .ReadAllAsync();
 
-            var result = await EasyDb.Default
-                   .Select<Post>(Mapping.GetTable("posts"))
-                   .ReadAllAsync();
+            Assert.AreEqual(2,result.Count);
 
             Assert.AreEqual(1, result[0].Id);
-            Assert.AreEqual("Post 1", result[0].Title);
-            Assert.AreEqual("Content 1", result[0].Content);
-            Assert.AreEqual(11, result[0].UserId);
-            Assert.AreEqual(2, result[0].CategoryId);
-            Assert.AreEqual(null, result[0].User);
-            Assert.AreEqual(null, result[0].Category);
+            Assert.AreEqual("Marie", result[0].FirstName);
+            Assert.AreEqual("Bellin", result[0].LastName);
+            Assert.AreEqual(null, result[0].Age);
+            Assert.AreEqual("marie@domain.com", result[0].Email);
 
             Assert.AreEqual(2, result[1].Id);
-            Assert.AreEqual("Post 2", result[1].Title);
-            Assert.AreEqual("Content 2", result[1].Content);
-            Assert.AreEqual(12, result[1].UserId);
-            Assert.AreEqual(null, result[1].CategoryId);
-            Assert.AreEqual(null, result[1].User);
-            Assert.AreEqual(null, result[1].Category);
-        }
-
-
-        // relation one
-
-        [TestMethod]
-        public void TestAddOne_HasRelations()
-        {
-            EasyDb.Default.SetConnectionSettings(sqlServerConnectionString, sqlServerProviderName);
-
-            Mapping.AddTable("Users")
-                          .AddPrimaryKeyColumn("Id", "Id");
-
-            Mapping.AddTable("categories")
-                .AddPrimaryKeyColumn("id", "Id")
-                .AddColumn("name", "Name");
-
-            Mapping.AddTable("posts")
-                .AddPrimaryKeyColumn("Id", "Id")
-                .AddColumn("title", "Title")
-                .AddColumn("content", "Content")
-                .AddForeignKeyColumn("category_id", "CategoryId", "categories", "id")
-                .AddForeignKeyColumn("user_id", "UserId", "Users", "Id");
-
-            var command = EasyDb.Default
-                   .Select<Post>(Mapping.GetTable("posts"))
-                   .HasOne<Category>("Category", Mapping.GetTable("categories"))
-                   .HasOne<User>("User", Mapping.GetTable("Users"));
-
-            Assert.IsTrue(command.HasOneRelation<Category>());
-            Assert.IsTrue(command.HasOneRelation<User>());
-        }
-
-        [TestMethod]
-        public void TestOneForeignKeys()
-        {
-            EasyDb.Default.SetConnectionSettings(sqlServerConnectionString, sqlServerProviderName);
-
-            Mapping.AddTable("Users")
-                          .AddPrimaryKeyColumn("Id", "Id");
-
-            Mapping.AddTable("categories")
-                .AddPrimaryKeyColumn("id", "Id")
-                .AddColumn("name", "Name");
-
-            Mapping.AddTable("posts")
-                .AddPrimaryKeyColumn("Id", "Id")
-                .AddColumn("title", "Title")
-                .AddColumn("content", "Content")
-                .AddForeignKeyColumn("category_id", "CategoryId", "categories", "id")
-                .AddForeignKeyColumn("user_id", "UserId", "Users", "Id");
-
-            var command = EasyDb.Default
-                   .Select<Post>(Mapping.GetTable("posts"))
-                   .HasOne<Category>("Category", Mapping.GetTable("categories"))
-                   .HasOne<User>("User", Mapping.GetTable("Users"));
-
-            var relation = command.GetOneRelation<User>();
-            var result = relation.GetForeignKeys();
-
-            Assert.AreEqual(1, result.Length);
-            Assert.AreEqual("user_id", result[0].ColumnName);
-            Assert.AreEqual("Id", result[0].PrimaryKeyReferenced);
-            Assert.AreEqual("UserId", result[0].PropertyName);
-            Assert.AreEqual("Users", result[0].TableReferenced);
-        }
-
-
-        [TestMethod]
-        public void TestGetOneQuery()
-        {
-            EasyDb.Default.SetConnectionSettings(sqlServerConnectionString, sqlServerProviderName);
-
-            Mapping.AddTable("Users")
-                          .AddPrimaryKeyColumn("Id", "Id");
-
-            Mapping.AddTable("categories")
-                .AddPrimaryKeyColumn("id", "Id")
-                .AddColumn("name", "Name");
-
-            Mapping.AddTable("posts")
-                .AddPrimaryKeyColumn("Id", "Id")
-                .AddColumn("title", "Title")
-                .AddColumn("content", "Content")
-                .AddForeignKeyColumn("category_id", "CategoryId", "categories", "id")
-                .AddForeignKeyColumn("user_id", "UserId", "Users", "Id");
-
-            var command = EasyDb.Default
-                   .Select<Post>(Mapping.GetTable("posts"))
-                   .HasOne<Category>("Category", Mapping.GetTable("categories"))
-                   .HasOne<User>("User", Mapping.GetTable("Users"));
-
-            var fks = command.GetOneRelation<User>().GetForeignKeys();
-
-            var result = command.GetOneRelation<User>().GetQuery(fks);
-
-            Assert.AreEqual("select * from [Users] where [Id]=@user_id", result);
-        }
-
-
-        [TestMethod]
-        public async Task TestReadAllAsync_WithOneRelations()
-        {
-            EasyDb.Default.SetConnectionSettings(sqlServerConnectionString, sqlServerProviderName);
-
-            Mapping.AddTable("Users")
-               .AddPrimaryKeyColumn("Id", "Id");
-
-            Mapping.AddTable("categories")
-                .AddPrimaryKeyColumn("id", "Id")
-                .AddColumn("name", "Name");
-
-            Mapping.AddTable("posts")
-                .AddPrimaryKeyColumn("Id", "Id")
-                .AddColumn("title", "Title")
-                .AddColumn("content", "Content")
-                .AddForeignKeyColumn("category_id", "CategoryId", "categories", "id")
-                .AddForeignKeyColumn("user_id", "UserId", "Users", "Id");
-
-            var result = await EasyDb.Default
-                   .Select<Post>(Mapping.GetTable("posts"))
-                   .HasOne<Category>("Category", Mapping.GetTable("categories"))
-                   .HasOne<User>("User", Mapping.GetTable("Users"))
-                   .ReadAllAsync();
-
-            Assert.IsNotNull(result[0].User);
-            Assert.AreEqual(11, result[0].User.Id);
-            Assert.AreEqual("Marie", result[0].User.Name);
-            Assert.AreEqual("marie@mail.com", result[0].User.Email);
-            Assert.AreEqual(null, result[0].User.Age);
-
-            Assert.IsNotNull(result[0].Category);
-            Assert.AreEqual(2, result[0].Category.Id);
-            Assert.AreEqual("Mobile", result[0].Category.Name);
-
-            Assert.IsNotNull(result[1].User);
-            Assert.AreEqual(12, result[1].User.Id);
-            Assert.AreEqual("Pat", result[1].User.Name);
-            Assert.AreEqual(null, result[1].User.Email);
-            Assert.AreEqual(20, result[1].User.Age);
-
-            Assert.IsNull(result[1].Category);
-        }
-
-
-        [TestMethod]
-        public async Task WithMoreResults()
-        {
-            EasyDb.Default.SetConnectionSettings(sqlServerConnectionString, sqlServerProviderName);
-
-            Mapping.AddTable("Users")
-               .AddPrimaryKeyColumn("Id", "Id");
-
-            Mapping.AddTable("categories")
-                .AddPrimaryKeyColumn("id", "Id")
-                .AddColumn("name", "Name");
-
-            Mapping.AddTable("posts")
-                .AddPrimaryKeyColumn("Id", "Id")
-                .AddColumn("title", "Title")
-                .AddColumn("content", "Content")
-                .AddForeignKeyColumn("category_id", "CategoryId", "categories", "id")
-                .AddForeignKeyColumn("user_id", "UserId", "Users", "Id");
-
-            var results = await EasyDb.Default
-                 .Select<Post>(Mapping.GetTable("posts"))
-                 .Where(Condition.Op("user_id",11))
-                 .HasOne<Category>("Category", Mapping.GetTable("categories"))
-                 .HasOne<User>("User", Mapping.GetTable("Users"))
-                 .ReadAllAsync();
-
-            foreach (var result in results)
-            {
-                Assert.IsNotNull(result.User);
-                Assert.AreEqual(11, result.User.Id);
-                Assert.AreEqual("Marie", result.User.Name);
-                Assert.AreEqual("marie@mail.com", result.User.Email);
-                Assert.AreEqual(null, result.User.Age);
-            }
-        }
-
-        [TestMethod]
-        public async Task WithMoreResultAndConditions()
-        {
-            EasyDb.Default.SetConnectionSettings(sqlServerConnectionString, sqlServerProviderName);
-
-            Mapping.AddTable("Users")
-               .AddPrimaryKeyColumn("Id", "Id");
-
-            Mapping.AddTable("categories")
-                .AddPrimaryKeyColumn("id", "Id")
-                .AddColumn("name", "Name");
-
-            Mapping.AddTable("posts")
-                .AddPrimaryKeyColumn("Id", "Id")
-                .AddColumn("title", "Title")
-                .AddColumn("content", "Content")
-                .AddForeignKeyColumn("category_id", "CategoryId", "categories", "id")
-                .AddForeignKeyColumn("user_id", "UserId", "Users", "Id");
-
-            var results = await EasyDb.Default
-                 .Select<Post>(Mapping.GetTable("posts"))
-                 .Where(Condition.Op("user_id", 11).And(Condition.IsNotNull("category_id")))
-                 .HasOne<Category>("Category", Mapping.GetTable("categories"))
-                 .HasOne<User>("User", Mapping.GetTable("Users"))
-                 .ReadAllAsync();
-
-            foreach (var result in results)
-            {
-                Assert.IsNotNull(result.User);
-                Assert.AreEqual(11, result.User.Id);
-                Assert.AreEqual("Marie", result.User.Name);
-                Assert.AreEqual("marie@mail.com", result.User.Email);
-                Assert.AreEqual(null, result.User.Age);
-
-                Assert.IsNotNull(result.Category);
-                Assert.IsTrue(result.Category.Id > 0);
-                Assert.IsFalse(string.IsNullOrEmpty(result.Category.Name));
-            }
-        }
-
-        [TestMethod]
-        public async Task WithMoreResultAndConditionAndIsNull()
-        {
-            EasyDb.Default.SetConnectionSettings(sqlServerConnectionString, sqlServerProviderName);
-
-            Mapping.AddTable("Users")
-               .AddPrimaryKeyColumn("Id", "Id");
-
-            Mapping.AddTable("categories")
-                .AddPrimaryKeyColumn("id", "Id")
-                .AddColumn("name", "Name");
-
-            Mapping.AddTable("posts")
-                .AddPrimaryKeyColumn("Id", "Id")
-                .AddColumn("title", "Title")
-                .AddColumn("content", "Content")
-                .AddForeignKeyColumn("category_id", "CategoryId", "categories", "id")
-                .AddForeignKeyColumn("user_id", "UserId", "Users", "Id");
-
-            var results = await EasyDb.Default
-                 .Select<Post>(Mapping.GetTable("posts"))
-                 .Where(Condition.Op("user_id", 11).And(Condition.IsNull("category_id")))
-                 .HasOne<Category>("Category", Mapping.GetTable("categories"))
-                 .HasOne<User>("User", Mapping.GetTable("Users"))
-                 .ReadAllAsync();
-
-            foreach (var result in results)
-            {
-                Assert.IsNotNull(result.User);
-                Assert.AreEqual(11, result.User.Id);
-                Assert.AreEqual("Marie", result.User.Name);
-                Assert.AreEqual("marie@mail.com", result.User.Email);
-                Assert.AreEqual(null, result.User.Age);
-
-                Assert.IsNull(result.CategoryId);
-                Assert.IsNull(result.Category);
-            }
-        }
-
-        // relations many
-
-        [TestMethod]
-        public void TestMany_HasRelations()
-        {
-            EasyDb.Default.SetConnectionSettings(sqlServerConnectionString, sqlServerProviderName);
-
-            Mapping.AddTable("Users")
-                .AddPrimaryKeyColumn("id", "Id");
-
-            Mapping.AddTable("posts")
-                  .AddPrimaryKeyColumn("Id", "Id")
-                  .AddColumn("title", "Title")
-                  .AddColumn("content", "Content")
-                  .AddForeignKeyColumn("category_id", "CategoryId", "categories", "id")
-                  .AddForeignKeyColumn("user_id", "UserId", "Users", "Id");
-
-
-            var result = EasyDb.Default
-                   .Select<User>(Mapping.GetTable("Users"))
-                   .Where(Condition.Op("id", 11))
-                   .HasMany<Post>("PostList", Mapping.GetTable("posts"));
-
-
-            Assert.IsTrue(result.HasManyRelation<Post>());
-        }
-
-        [TestMethod]
-        public void TestMany_ForeignKeys()
-        {
-            EasyDb.Default.SetConnectionSettings(sqlServerConnectionString, sqlServerProviderName);
-
-            Mapping.AddTable("Users")
-                .AddPrimaryKeyColumn("id", "Id");
-
-            Mapping.AddTable("posts")
-                  .AddPrimaryKeyColumn("Id", "Id")
-                  .AddColumn("title", "Title")
-                  .AddColumn("content", "Content")
-                  .AddForeignKeyColumn("category_id", "CategoryId", "categories", "id")
-                  .AddForeignKeyColumn("user_id", "UserId", "Users", "Id");
-
-
-            var command = EasyDb.Default
-                   .Select<User>(Mapping.GetTable("Users"))
-                   .Where(Condition.Op("id", 11))
-                   .HasMany<Post>("PostList", Mapping.GetTable("posts"));
-
-
-            var relation = command.GetManyRelation<Post>();
-            var result = relation.GetForeignKeys();
-
-            Assert.AreEqual(1, result.Length);
-            Assert.AreEqual("user_id", result[0].ColumnName);
-            Assert.AreEqual("Id", result[0].PrimaryKeyReferenced);
-            Assert.AreEqual("UserId", result[0].PropertyName);
-            Assert.AreEqual("Users", result[0].TableReferenced);
-        }
-
-        [TestMethod]
-        public void TestMany_GetQuery()
-        {
-            EasyDb.Default.SetConnectionSettings(sqlServerConnectionString, sqlServerProviderName);
-
-            Mapping.AddTable("Users")
-                .AddPrimaryKeyColumn("id", "Id");
-
-            Mapping.AddTable("posts")
-                  .AddPrimaryKeyColumn("id", "Id")
-                  .AddColumn("title", "Title")
-                  .AddColumn("content", "Content")
-                  .AddForeignKeyColumn("category_id", "CategoryId", "categories", "id")
-                  .AddForeignKeyColumn("user_id", "UserId", "Users", "Id");
-
-
-            var command = EasyDb.Default
-                   .Select<User>(Mapping.GetTable("Users"))
-                   .Where(Condition.Op("id", 11))
-                   .HasMany<Post>("PostList", Mapping.GetTable("posts"));
-
-
-            var fks = command.GetManyRelation<Post>().GetForeignKeys();
-            var result = command.GetManyRelation<Post>().GetQuery(fks);
-
-            Assert.AreEqual("select [id],[title],[content],[category_id],[user_id] from [posts] where [user_id]=@user_id", result);
-        }
-
-        [TestMethod]
-        public async Task TestRelationMany()
-        {
-            EasyDb.Default.SetConnectionSettings(sqlServerConnectionString, sqlServerProviderName);
-
-            Mapping.AddTable("Users")
-                .AddPrimaryKeyColumn("id", "Id");
-
-            Mapping.AddTable("posts")
-                  .AddPrimaryKeyColumn("id", "Id")
-                  .AddColumn("title", "Title")
-                  .AddColumn("content", "Content")
-                  .AddForeignKeyColumn("category_id","CategoryId","categories","id")
-                  .AddForeignKeyColumn("user_id", "UserId", "Users", "Id");
-
-
-            var result = await EasyDb.Default
-                   .Select<User>(Mapping.GetTable("Users"))
-                   .Where(Condition.Op("id", 11))
-                   .HasMany<Post>("PostList", Mapping.GetTable("posts"))
-                   .ReadOneAsync();
-
-
-            foreach (var item in result.PostList)
-            {
-                Assert.IsNotNull(item);
-                Assert.IsTrue(item.Id > 0);
-                Assert.IsFalse(string.IsNullOrEmpty(item.Title));
-                Assert.IsFalse(string.IsNullOrEmpty(item.Content));
-            }
-        }
+            Assert.AreEqual("Pat", result[1].FirstName);
+            Assert.AreEqual("Prem", result[1].LastName);
+            Assert.AreEqual(30, result[1].Age);
+            Assert.AreEqual(null, result[1].Email);
+        }        
 
     }
 
-
-    public class Category
-    {
-        public int Id { get; set; }
-        public string Name { get; set; }
-    }
-
-    public class User
-    {
-        public int Id { get; set; }
-        public string Name { get; set; }
-        public string Email { get; set; }
-        public int? Age { get; set; }
-
-        public List<Post> PostList { get; set; }
-    }
-
-    public class Post
-    {
-        public int Id { get; set; }
-        public string Title { get; set; }
-        public string Content { get; set; }
-
-        public int UserId { get; set; }
-        public User User { get; set; }
-
-        public int? CategoryId { get; set; }
-        public Category Category { get; set; }
-    }
 
     public class BaseTable
     {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace EasyDbLib
@@ -23,13 +24,17 @@ namespace EasyDbLib
             this.table = table;
         }
 
+        public string[] GetColumns()
+        {
+            return this.columnValues.Keys.ToArray();
+        }
+
         public UpdateQuery Set(string column, object value)
         {
             this.columnValues[column] = value;
             this.hasSet = true;
             return this;
         }
-
 
         public UpdateQuery Where(Condition condition)
         {
@@ -43,31 +48,47 @@ namespace EasyDbLib
         {
             if (!this.hasSet) { throw new Exception("No column and values provided"); }
 
-            return this.queryService.GetUpdate(this.table, this.columnValues, this.condition);
+            return this.queryService.GetUpdate(this.table, this.GetColumns(), this.condition);
         }
 
-        protected EasyDbCommand CreateCommand()
+        public EasyDbCommand CreateCommand()
         {
             var query = this.GetQuery();
 
             var command = this.easyDbInstance.CreateCommand(query);
 
+            var added = new List<string>();
+
             if (this.hasCondition)
             {
-                command.AddParameter(this.condition.Main.ParameterName, this.condition.Main.ParameterValue);
+                if (this.condition.Main.IsConditionOp)
+                {
+                    command.AddParameter(this.condition.Main.ParameterName, this.condition.Main.ParameterValue);
+                    added.Add(this.condition.Main.ParameterName);
+                }
 
                 if (this.condition.HasConditions())
                 {
                     foreach (var subCondittion in this.condition.SubConditions)
                     {
-                        if (subCondittion.IsConditionOp)
+                        if (subCondittion.IsConditionOp && !added.Contains(subCondittion.ParameterName))
                         {
                             command.AddParameter(subCondittion.ParameterName, subCondittion.ParameterValue);
+                            added.Add(subCondittion.ParameterName);
                         }
                     }
                 }
             }
 
+            foreach (var columnValue in this.columnValues)
+            {
+                var parameterName = this.queryService.GetParameterName(columnValue.Key);
+                if (!added.Contains(parameterName))
+                {
+                    command.AddParameter(parameterName, columnValue.Value);
+                }
+            }
+           
             return command;
         }
 

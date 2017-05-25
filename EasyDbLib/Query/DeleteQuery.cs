@@ -31,7 +31,7 @@ namespace EasyDbLib
             return this.queryService.GetDelete(this.tableName, this.condition);
         }
 
-        public async Task<int> NonQueryAsync()
+        public EasyDbCommand CreateCommand()
         {
             var query = this.GetQuery();
 
@@ -52,8 +52,13 @@ namespace EasyDbLib
                     }
                 }
             }
+            return command;
+        }
 
-          return await command.NonQueryAsync();
+        public async Task<int> NonQueryAsync()
+        {
+            var command = this.CreateCommand();
+            return await command.NonQueryAsync();
         }
 
     }

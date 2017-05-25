@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data;
 
 namespace EasyDbLib
@@ -18,8 +19,17 @@ namespace EasyDbLib
             this.Columns = new Dictionary<string, Column>();
         }
 
+        private static void CheckPropertyName(string propertyName)
+        {
+            if (!NameChecker.CheckPropertyName(propertyName))
+            {
+                throw new Exception("Invalid property name " + propertyName);
+            }
+        }
+
         public Table AddColumn(string columnName, string propertyName, DbType dbType, bool ignore = false)
         {
+            CheckPropertyName(propertyName);
             this.Columns[columnName] = new Column(columnName, propertyName, dbType, ignore);
             this.HasNoColumnOrOnlyKeys = false;
             return this;
@@ -27,6 +37,7 @@ namespace EasyDbLib
 
         public Table AddColumn(string columnName, string propertyName, bool ignore = false)
         {
+            CheckPropertyName(propertyName);
             this.Columns[columnName] = new Column(columnName, propertyName, null, ignore);
             this.HasNoColumnOrOnlyKeys = false;
             return this;
@@ -34,24 +45,28 @@ namespace EasyDbLib
 
         public Table AddPrimaryKeyColumn(string columnName, string propertyName, DbType dbType, bool ignore= false)
         {
+            CheckPropertyName(propertyName);
             this.Columns[columnName] = new PrimaryKeyColumn(columnName, propertyName, dbType, ignore);
             return this;
         }
 
         public Table AddPrimaryKeyColumn(string columnName, string propertyName,  bool ignore = false)
         {
+            CheckPropertyName(propertyName);
             this.Columns[columnName] = new PrimaryKeyColumn(columnName, propertyName, null, ignore);
             return this;
         }
 
         public Table AddForeignKeyColumn(string columnName, string propertyName, string tableReferenced, string primaryKeyReferenced, DbType dbType, bool ignore = false)
         {
+            CheckPropertyName(propertyName);
             this.Columns[columnName] = new ForeignKeyColumn(columnName, tableReferenced, primaryKeyReferenced, propertyName, dbType, ignore);
             return this;
         }
 
         public Table AddForeignKeyColumn(string columnName, string propertyName, string tableReferenced, string primaryKeyReferenced, bool ignore = false)
         {
+            CheckPropertyName(propertyName);
             this.Columns[columnName] = new ForeignKeyColumn(columnName, tableReferenced, primaryKeyReferenced, propertyName, null, ignore);
             return this;
         }
@@ -63,6 +78,8 @@ namespace EasyDbLib
 
         public Column GetColumn(string columnName)
         {
+            if (!this.HasColumn(columnName)) { throw new Exception("No column registered for " + columnName + " in the mapping of " + this.TableName); }
+
             return this.Columns[columnName];
         }
 

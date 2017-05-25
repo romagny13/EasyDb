@@ -13,7 +13,7 @@ namespace EasyDbLib
         string GetWhereHasOne(ForeignKeyColumn[] foreignKeys);
         string GetWhereHasMany(ForeignKeyColumn[] foreignKeys);
         string GetInsertInto(string table, string[] columns, bool lastInsertedId);
-        string GetUpdate(string table, Dictionary<string, object> columnValues, ConditionAndParameterContainer condition);
+        string GetUpdate(string table, string[] columns, ConditionAndParameterContainer condition);
         string GetDelete(string table, ConditionAndParameterContainer condition);
     }
 }

@@ -12,6 +12,8 @@ namespace EasyDbLib
 
         public Column(string columnName, string propertyName, DbType? dbType, bool ignore)
         {
+
+
             this.ColumnName = columnName;
             this.PropertyName = propertyName;
             this.Ignore = ignore;

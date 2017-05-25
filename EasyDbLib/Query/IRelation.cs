@@ -4,10 +4,13 @@ namespace EasyDbLib
 {
     public interface IRelation
     {
-        ForeignKeyColumn[] GetForeignKeys();
-        string GetQuery(ForeignKeyColumn[] foreignKeys);
+        Table Mapping { get; }
+        string PropertyToFill { get; }
+        ForeignKeyColumn[] ForeignKeys { get; }
+
         EasyDbCommand CreateCommand(object model);
         Task Fetch(object model);
+        string GetQuery();
     }
 
 }

@@ -34,7 +34,10 @@ namespace EasyDbLib
             {
                 return factories[providerName];
             }
-            throw new Exception("Provider " + providerName + " not supported. You could register a custom QueryService with \"Set\" method or with \"RegisterQueryService\" from the easydb instance.");
+            else
+            {
+                throw new Exception("No query service found for " + providerName);
+            }
         }
     }
 }

@@ -41,20 +41,24 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IModelResolver.cs" />
+    <Compile Include="Core\IEasyDb.cs" />
+    <Compile Include="Core\NameChecker.cs" />
+    <Compile Include="Core\IModelResolver.cs" />
+    <Compile Include="Core\ReaderContainer.cs" />
     <Compile Include="Mapping\Column.cs" />
     <Compile Include="Mapping\ForeignKeyColumn.cs" />
     <Compile Include="Mapping\Mapping.cs" />
     <Compile Include="Mapping\PrimaryKeyColumn.cs" />
     <Compile Include="Mapping\Table.cs" />
-    <Compile Include="ConnectionStrategy.cs" />
-    <Compile Include="EasyDb.cs" />
-    <Compile Include="EasyDbCommand.cs" />
-    <Compile Include="IReaderContainer.cs" />
-    <Compile Include="ModelResolver.cs" />
-    <Compile Include="EasyDbErrorEventArgs.cs" />
+    <Compile Include="Core\ConnectionStrategy.cs" />
+    <Compile Include="Core\EasyDb.cs" />
+    <Compile Include="Core\EasyDbCommand.cs" />
+    <Compile Include="Core\IReaderContainer.cs" />
+    <Compile Include="Core\ModelResolver.cs" />
+    <Compile Include="Core\EasyDbErrorEventArgs.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Query\DeleteQuery.cs" />
+    <Compile Include="Query\IManyRelation.cs" />
     <Compile Include="Query\InsertQuery.cs" />
     <Compile Include="Query\QueryServiceFactory.cs" />
     <Compile Include="Query\ConditionAndParameterContainer.cs" />
@@ -72,7 +76,7 @@
     <Compile Include="Query\SelectQuery.cs" />
     <Compile Include="Query\QueryService.cs" />
     <Compile Include="Query\UpdateQuery.cs" />
-    <Compile Include="Singleton.cs" />
+    <Compile Include="Core\Singleton.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

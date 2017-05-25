@@ -47,20 +47,30 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Common\Models.cs" />
-    <Compile Include="EasyDbTest.cs" />
+    <Compile Include="Core\BootstrapAndExceptionTest.cs" />
+    <Compile Include="Core\ConnectionStrategyTest.cs" />
+    <Compile Include="Core\ReadTest.cs" />
+    <Compile Include="Core\NameCheckerTest.cs" />
+    <Compile Include="InitDb.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ModelResolverTest.cs" />
+    <Compile Include="Core\ModelResolverTest.cs" />
     <Compile Include="Mapping\MappingTest.cs" />
-    <Compile Include="ProviderTest.cs" />
+    <Compile Include="Core\ProviderTest.cs" />
     <Compile Include="Query\QueryServiceTest.cs" />
     <Compile Include="Query\ConditionAndParameterContainerTest.cs" />
-    <Compile Include="Query\InsertUpdateDeleteQueriesTest.cs" />
-    <Compile Include="RelationTest.cs" />
+    <Compile Include="Query\DeleteQueryTest.cs" />
+    <Compile Include="Query\SelectRelationOneTest.cs" />
+    <Compile Include="Query\SelectManyRelationTest.cs" />
+    <Compile Include="Query\UpdateQueryTest.cs" />
+    <Compile Include="Core\RelationTest.cs" />
     <Compile Include="Query\SelectQueryTest.cs" />
-    <Compile Include="QueryServiceFactoryTest.cs" />
+    <Compile Include="Query\QueryServiceFactoryTest.cs" />
+    <Compile Include="Core\WriteTest.cs" />
+    <Compile Include="Query\InsertQueryTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -73,15 +83,11 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="DBTests.mdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="NorthWind.mdb">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="SqlServerDb.mdf">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="SqlServerDb_log.ldf">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      <DependentUpon>SqlServerDb.mdf</DependentUpon>
     </Content>
   </ItemGroup>
   <ItemGroup />
