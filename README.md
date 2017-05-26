@@ -18,7 +18,7 @@ PM> Install-Package EasyDb
 
 ## Documentation
 
-* [Gitbook](https://www.gitbook.com/book/romagny13/easydb/)
+* [Wiki](https://github.com/romagny13/EasyDb/wiki)
 
 ## Examples
 
