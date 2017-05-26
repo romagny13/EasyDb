@@ -50,7 +50,7 @@ EasyDb.Default.SetConnectionStringSettings(connectionString, providerName);
 
 Mapping.SetTable("users");
 Mapping.SetTable("posts")
-       .SetForeignKeyColumn("user_id","user_d","users","id");
+       .SetForeignKeyColumn("user_id","user_id","users","id");
 
 
 var result = await EasyDb.Default
