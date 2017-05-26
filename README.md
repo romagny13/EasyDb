@@ -55,8 +55,8 @@ Mapping.SetTable("posts")
 
 var result = await EasyDb.Default
                 .Select<Post>(Mapping.GetTable("posts"))
-                .SetZeroOne<User>("User", Mapping.GetTable("users"))
                 .Where(Check.Op("id", 1))
+                .SetZeroOne<User>("User", Mapping.GetTable("users"))
                 .ReadOneAsync();
 
 ```
