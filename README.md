@@ -34,6 +34,7 @@ EasyDb.Default.OnError += (sender, e) =>
             };
 
 EasyDb.Default.SetConnectionStringSettings(connectionString, providerName);
+
 var result =  await EasyDb.Default.CreateCommand("select * from [users] where id=@id")
                                   .AddParameter("@id",1)
                                   .ReadOneAsync<User>();
