@@ -68,6 +68,29 @@ namespace EasyDbLibTest.Query
             Assert.AreEqual("insert into [users] ([firstname],[lastname],[age],[email]) output inserted.id values (@firstname,@lastname,@age,@email)", result);
         }
 
+        [TestMethod]
+        public void TestQuery_WithNoInsertedId()
+        {
+            var db = this.GetDb();
+
+            var user = new User
+            {
+                FirstName = "new firstname",
+                LastName = "new lastname",
+                Age = 20,
+                Email = "new@domain.com"
+            };
+
+            var result = db.InsertInto("users")
+                .Values("firstname", user.FirstName)
+                .Values("lastname", user.LastName)
+                .Values("age", user.Age)
+                .Values("email", user.Email)
+                .GetQuery(false);
+
+            Assert.AreEqual("insert into [users] ([firstname],[lastname],[age],[email]) values (@firstname,@lastname,@age,@email)", result);
+        }
+
         // create command
 
         [TestMethod]

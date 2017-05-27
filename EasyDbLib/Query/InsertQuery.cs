@@ -35,15 +35,15 @@ namespace EasyDbLib
 
         public string GetQuery(bool lastInsertedId = true)
         {
-            if (!this.hasValues) { throw new Exception("No columns provided"); }
+            if (!this.hasValues) { throw new Exception("No values provided"); }
 
             return this.queryService.GetInsertInto(this.table, this.GetColumns(), lastInsertedId);
         }
 
 
-        public EasyDbCommand CreateCommand()
+        public EasyDbCommand CreateCommand(bool lastInsertedId = true)
         {
-            var query = this.GetQuery();
+            var query = this.GetQuery(lastInsertedId);
 
             var command = this.easyDbInstance.CreateCommand(query);
 
@@ -64,7 +64,7 @@ namespace EasyDbLib
 
         public async Task<int> NonQueryAsync()
         {
-            var command = this.CreateCommand();
+            var command = this.CreateCommand(false);
             return await command.NonQueryAsync();
         }
 
