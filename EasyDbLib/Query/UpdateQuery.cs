@@ -59,9 +59,19 @@ namespace EasyDbLib
 
             var added = new List<string>();
 
+            foreach (var columnValue in this.columnValues)
+            {
+                var parameterName = this.queryService.GetParameterName(columnValue.Key);
+                if (!added.Contains(parameterName))
+                {
+                    command.AddParameter(parameterName, columnValue.Value);
+                    added.Add(parameterName);
+                }
+            }
+
             if (this.hasCondition)
             {
-                if (this.condition.Main.IsConditionOp)
+                if (this.condition.Main.IsConditionOp && !added.Contains(this.condition.Main.ParameterName))
                 {
                     command.AddParameter(this.condition.Main.ParameterName, this.condition.Main.ParameterValue);
                     added.Add(this.condition.Main.ParameterName);
@@ -71,7 +81,7 @@ namespace EasyDbLib
                 {
                     foreach (var subCondittion in this.condition.SubConditions)
                     {
-                        if (subCondittion.IsConditionOp && !added.Contains(subCondittion.ParameterName))
+                        if (subCondittion.IsConditionOp && !added.Contains(this.condition.Main.ParameterName))
                         {
                             command.AddParameter(subCondittion.ParameterName, subCondittion.ParameterValue);
                             added.Add(subCondittion.ParameterName);
@@ -80,15 +90,6 @@ namespace EasyDbLib
                 }
             }
 
-            foreach (var columnValue in this.columnValues)
-            {
-                var parameterName = this.queryService.GetParameterName(columnValue.Key);
-                if (!added.Contains(parameterName))
-                {
-                    command.AddParameter(parameterName, columnValue.Value);
-                }
-            }
-           
             return command;
         }
 

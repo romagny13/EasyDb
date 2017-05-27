@@ -103,15 +103,15 @@ namespace EasyDbLibTest.Query
             Assert.AreEqual("update [users] set [firstname]=@firstname,[lastname]=@lastname where [id]=@id",result.Command.CommandText);
             Assert.AreEqual(CommandType.Text, result.Command.CommandType);
 
+            Assert.AreEqual("@firstname", result.Command.Parameters[0].ParameterName);
+            Assert.AreEqual(user.FirstName, result.Command.Parameters[0].Value);
+
+            Assert.AreEqual("@lastname", result.Command.Parameters[1].ParameterName);
+            Assert.AreEqual(user.LastName, result.Command.Parameters[1].Value);
+
             Assert.AreEqual(3, result.Command.Parameters.Count);
-            Assert.AreEqual("@id", result.Command.Parameters[0].ParameterName);
-            Assert.AreEqual(user.Id, result.Command.Parameters[0].Value);
-
-            Assert.AreEqual("@firstname", result.Command.Parameters[1].ParameterName);
-            Assert.AreEqual(user.FirstName, result.Command.Parameters[1].Value);
-
-            Assert.AreEqual("@lastname", result.Command.Parameters[2].ParameterName);
-            Assert.AreEqual(user.LastName, result.Command.Parameters[2].Value);
+            Assert.AreEqual("@id", result.Command.Parameters[2].ParameterName);
+            Assert.AreEqual(user.Id, result.Command.Parameters[2].Value);
         }
 
         [TestMethod]
@@ -161,20 +161,22 @@ namespace EasyDbLibTest.Query
             Assert.AreEqual(CommandType.Text, result.Command.CommandType);
 
             Assert.AreEqual(5, result.Command.Parameters.Count);
-            Assert.AreEqual("@id", result.Command.Parameters[0].ParameterName);
-            Assert.AreEqual(user.Id, result.Command.Parameters[0].Value);
 
-            Assert.AreEqual("@firstname", result.Command.Parameters[1].ParameterName);
-            Assert.AreEqual(user.FirstName, result.Command.Parameters[1].Value);
+            Assert.AreEqual("@firstname", result.Command.Parameters[0].ParameterName);
+            Assert.AreEqual(user.FirstName, result.Command.Parameters[0].Value);
 
-            Assert.AreEqual("@lastname", result.Command.Parameters[2].ParameterName);
-            Assert.AreEqual(user.LastName, result.Command.Parameters[2].Value);
+            Assert.AreEqual("@lastname", result.Command.Parameters[1].ParameterName);
+            Assert.AreEqual(user.LastName, result.Command.Parameters[1].Value);
 
-            Assert.AreEqual("@age", result.Command.Parameters[3].ParameterName);
+            Assert.AreEqual("@age", result.Command.Parameters[2].ParameterName);
+            Assert.AreEqual(DBNull.Value, result.Command.Parameters[2].Value);
+
+            Assert.AreEqual("@email", result.Command.Parameters[3].ParameterName);
             Assert.AreEqual(DBNull.Value, result.Command.Parameters[3].Value);
 
-            Assert.AreEqual("@email", result.Command.Parameters[4].ParameterName);
-            Assert.AreEqual(DBNull.Value, result.Command.Parameters[4].Value);
+            Assert.AreEqual("@id", result.Command.Parameters[4].ParameterName);
+            Assert.AreEqual(user.Id, result.Command.Parameters[4].Value);
+
         }
 
         // execute

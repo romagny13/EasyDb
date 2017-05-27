@@ -14,7 +14,9 @@ namespace EasyDbLibTest.Core
             InitDb.CreateDbTest();
         }
 
+
         // bootstrap 
+
 
         [TestMethod]
         public void TestIsNotInitialized_WithoutConnectionString_Settings()

@@ -1,5 +1,8 @@
+using System;
+
 namespace EasyDbLib
 {
+
     public class CheckOp : Check
     {
         public string Operator { get; protected set; }

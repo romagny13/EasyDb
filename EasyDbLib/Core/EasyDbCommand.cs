@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using System.Data.Common;
 using System.Threading.Tasks;
 
@@ -90,13 +91,16 @@ namespace EasyDbLib
             {
                 await this.CheckStrategyAndOpenAsync();
 
-                using (var reader = await command.ExecuteReaderAsync())
+                using (this.command)
                 {
-                    while (await reader.ReadAsync())
+                    using (var reader = await command.ExecuteReaderAsync())
                     {
-                        var readerContainer = new ReaderContainer(reader);
-                        var model = (T)this.modelResolver.Resolve(typeof(T), readerContainer, mapping);
-                        result.Add(model);
+                        while (await reader.ReadAsync())
+                        {
+                            var readerContainer = new ReaderContainer(reader);
+                            var model = (T)this.modelResolver.Resolve(typeof(T), readerContainer, mapping);
+                            result.Add(model);
+                        }
                     }
                 }
 
@@ -112,29 +116,32 @@ namespace EasyDbLib
 
         public async Task<T> ReadOneAsync<T>(Table mapping = null)
         {
+            T model = default(T);
+
             try
             {
                 await this.CheckStrategyAndOpenAsync();
 
-                using (var reader = await command.ExecuteReaderAsync())
+                using (this.command)
                 {
-                    while (await reader.ReadAsync())
+                    using (var reader = await command.ExecuteReaderAsync())
                     {
-                        var readerContainer = new ReaderContainer(reader);
-                        var model = (T)this.modelResolver.Resolve(typeof(T), readerContainer, mapping);
-
-                        this.CheckStrategyAndClose();
-
-                        return model;
+                        if (await reader.ReadAsync())
+                        {
+                            var readerContainer = new ReaderContainer(reader);
+                            model = (T)this.modelResolver.Resolve(typeof(T), readerContainer, mapping);
+                        }
                     }
                 }
+
+                this.CheckStrategyAndClose();
             }
             catch (Exception e)
             {
                 this.easyDbInstance.HandleException(e, When.ReadOne, this.command);
             }
 
-            return default(T);
+            return model;
         }
 
         public async Task<int> NonQueryAsync()
@@ -145,7 +152,10 @@ namespace EasyDbLib
             {
                 await this.CheckStrategyAndOpenAsync();
 
-                affectedRows = await this.command.ExecuteNonQueryAsync();
+                using (this.command)
+                {
+                    affectedRows = await this.command.ExecuteNonQueryAsync();
+                }
 
                 this.CheckStrategyAndClose();
             }
@@ -165,7 +175,10 @@ namespace EasyDbLib
             {
                 await this.CheckStrategyAndOpenAsync();
 
-                result = await this.command.ExecuteScalarAsync();
+                using (this.command)
+                {
+                    result = await this.command.ExecuteScalarAsync();
+                }
 
                 this.CheckStrategyAndClose();
             }
@@ -176,5 +189,6 @@ namespace EasyDbLib
 
             return result;
         }
+
     }
 }

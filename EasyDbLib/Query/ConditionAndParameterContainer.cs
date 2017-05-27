@@ -42,16 +42,17 @@ namespace EasyDbLib
             {
                 return ((CheckOp)condition).Value;
             }
-            else if (condition is CheckLike)
-            {
-                return ((CheckLike)condition).Value;
-            }
             return null;
+        }
+
+        public bool IsCheckOp(Check condition)
+        {
+            return condition.GetType() == typeof(CheckOp);
         }
 
         public OrderedConditionAndParameter CreateOrderedParameter(Check condition, string op)
         {
-            var isConditionOp = condition.GetType() == typeof(CheckOp);
+            var isConditionOp = this.IsCheckOp(condition);
             var parameterName = isConditionOp ? this.GetUniqueParameterName(condition.Column) : this.GetParameterName(condition.Column);
             var valueString = this.GetValueString(condition, parameterName);
             var parameterValue = this.GetValue(condition);
@@ -60,7 +61,7 @@ namespace EasyDbLib
 
         public ConditionAndParameter CreateParameter(Check condition)
         {
-            var isConditionOp = condition.GetType() == typeof(CheckOp);
+            var isConditionOp = this.IsCheckOp(condition);
             var parameterName = isConditionOp ? this.GetUniqueParameterName(condition.Column) : this.GetParameterName(condition.Column);
             var valueString = this.GetValueString(condition, parameterName);
             var parameterValue = this.GetValue(condition);

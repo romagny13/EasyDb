@@ -32,7 +32,6 @@ namespace EasyDbLibTest.Query
             Assert.AreEqual(false, container.Main.IsConditionOp);
             Assert.AreEqual("@name", container.Main.ParameterName);
             Assert.AreEqual(" like '%a'", container.Main.ValueString);
-            Assert.AreEqual("%a", container.Main.ParameterValue);
         }
 
         [TestMethod]
