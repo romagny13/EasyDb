@@ -1,5 +1,0 @@
-C:\Users\romag\Documents\Visual Studio 2017\Projects\EasyDbLib\EasyDbLib\bin\Debug\EasyDbLib.dll
-C:\Users\romag\Documents\Visual Studio 2017\Projects\EasyDbLib\EasyDbLib\bin\Debug\EasyDbLib.pdb
-C:\Users\romag\Documents\Visual Studio 2017\Projects\EasyDbLib\EasyDbLib\obj\Debug\EasyDbLib.csprojResolveAssemblyReference.cache
-C:\Users\romag\Documents\Visual Studio 2017\Projects\EasyDbLib\EasyDbLib\obj\Debug\EasyDbLib.dll
-C:\Users\romag\Documents\Visual Studio 2017\Projects\EasyDbLib\EasyDbLib\obj\Debug\EasyDbLib.pdb
