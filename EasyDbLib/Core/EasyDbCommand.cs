@@ -33,12 +33,34 @@ namespace EasyDbLib
             this.command = command;
         }
 
-        public EasyDbCommand AddParameter(string name, object value)
+        protected DbParameter CreateParameter(string name, object value, DbType? dbType, ParameterDirection? direction)
         {
             var parameter = this.command.CreateParameter();
             parameter.ParameterName = name;
+            if (dbType.HasValue)
+            {
+                parameter.DbType = dbType.Value;
+            }
+            if (direction.HasValue)
+            {
+                parameter.Direction = direction.Value;
+            }
             parameter.Value = value ?? DBNull.Value;
 
+            return parameter;
+        }
+
+        public EasyDbCommand AddParameter(string name, object value, DbType dbType, ParameterDirection direction)
+        {
+            var parameter = this.CreateParameter(name, value, dbType, direction);
+            this.command.Parameters.Add(parameter);
+
+            return this;
+        }
+
+        public EasyDbCommand AddParameter(string name, object value, ParameterDirection direction)
+        {
+            var parameter = this.CreateParameter(name, value, null, direction);
             this.command.Parameters.Add(parameter);
 
             return this;
@@ -46,14 +68,38 @@ namespace EasyDbLib
 
         public EasyDbCommand AddParameter(string name, object value, DbType dbType)
         {
-            var parameter = this.command.CreateParameter();
-            parameter.ParameterName = name;
-            parameter.DbType = dbType;
-            parameter.Value = value ?? DBNull.Value;
-
+            var parameter = this.CreateParameter(name, value, dbType, null);
             this.command.Parameters.Add(parameter);
 
             return this;
+        }
+
+        public EasyDbCommand AddParameter(string name, object value)
+        {
+            var parameter = this.CreateParameter(name, value, null, null);
+            this.command.Parameters.Add(parameter);
+
+            return this;
+        }
+
+        public EasyDbCommand AddOutputParameter(string name)
+        {
+            var parameter = this.CreateParameter(name, null, null, ParameterDirection.Output);
+            this.command.Parameters.Add(parameter);
+
+            return this;
+        }
+
+        public bool HasParameter(string parameterName)
+        {
+            return this.Command.Parameters.Contains(parameterName);
+        }
+
+        public DbParameter GetParameter(string parameterName)
+        {
+            if (!this.HasParameter(parameterName)) { throw new Exception("No parameter " + parameterName + " registered"); }
+
+            return this.Command.Parameters[parameterName];
         }
 
         protected async Task<EasyDbCommand> OpenAsync()

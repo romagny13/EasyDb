@@ -151,10 +151,7 @@ namespace EasyDbLib
 
         public string GetQuery()
         {
-            return this.queryService.GetSelect(this.statements, this.limit, this.modelMapping)
-                   + this.queryService.GetFrom(this.modelMapping.TableName)
-                   + this.queryService.GetWhere(this.condition)
-                   + this.queryService.GetOrderBy(this.sorts);
+            return this.queryService.GetSelectFromOrderBy(this.modelMapping, this.statements, this.limit, this.condition, this.sorts);
         }
 
         public EasyDbCommand CreateCommand()

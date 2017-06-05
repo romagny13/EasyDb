@@ -16,6 +16,97 @@ namespace EasyDbLibTest.Core
             Mapping.Clear();
         }
 
+        // parameters
+
+        [TestMethod]
+        public void TestCreateCommand_WithParameter()
+        {
+            var db = new EasyDb();
+            db.SetConnectionStringSettings(InitDb.SqlConnectionString, InitDb.SqlProviderName);
+
+            var sql = "select * from users where id=@id";
+            var result = db.CreateCommand(sql).AddParameter("@id",10);
+
+            Assert.AreEqual(sql, result.Command.CommandText);
+            Assert.AreEqual(CommandType.Text, result.Command.CommandType);
+            Assert.AreEqual(1, result.Command.Parameters.Count);
+            Assert.AreEqual("@id", result.Command.Parameters[0].ParameterName);
+            Assert.AreEqual(10, result.Command.Parameters[0].Value);
+            Assert.AreEqual(ParameterDirection.Input, result.Command.Parameters[0].Direction);
+            Assert.AreEqual(DbType.Int32, result.Command.Parameters[0].DbType);
+        }
+
+        [TestMethod]
+        public void TestCreateCommand_WithParameters()
+        {
+            var db = new EasyDb();
+            db.SetConnectionStringSettings(InitDb.SqlConnectionString, InitDb.SqlProviderName);
+
+            var sql = "select * from users where id=@id and category_id=@id2";
+            var result = db.CreateCommand(sql).AddParameter("@id", 10).AddParameter("@id2",20);
+
+            Assert.AreEqual(sql, result.Command.CommandText);
+            Assert.AreEqual(CommandType.Text, result.Command.CommandType);
+
+            Assert.AreEqual(2, result.Command.Parameters.Count);
+
+            Assert.AreEqual("@id", result.Command.Parameters[0].ParameterName);
+            Assert.AreEqual(10, result.Command.Parameters[0].Value);
+            Assert.AreEqual(ParameterDirection.Input, result.Command.Parameters[0].Direction);
+            Assert.AreEqual(DbType.Int32, result.Command.Parameters[0].DbType);
+
+            Assert.AreEqual("@id2", result.Command.Parameters[1].ParameterName);
+            Assert.AreEqual(20, result.Command.Parameters[1].Value);
+            Assert.AreEqual(ParameterDirection.Input, result.Command.Parameters[1].Direction);
+            Assert.AreEqual(DbType.Int32, result.Command.Parameters[1].DbType);
+        }
+
+        [TestMethod]
+        public void TestAddParameter_WithDbType()
+        {
+            var db = new EasyDb();
+            db.SetConnectionStringSettings(InitDb.SqlConnectionString, InitDb.SqlProviderName);
+
+            var sql = "select * from users where id=@id";
+            var result = db.CreateCommand(sql).AddParameter("@id", 10, DbType.Int16);
+
+            Assert.AreEqual("@id", result.Command.Parameters[0].ParameterName);
+            Assert.AreEqual(10, result.Command.Parameters[0].Value);
+            Assert.AreEqual(ParameterDirection.Input, result.Command.Parameters[0].Direction);
+            Assert.AreEqual(DbType.Int16, result.Command.Parameters[0].DbType);
+        }
+
+        [TestMethod]
+        public void TestAddParameter_WithDirection()
+        {
+            var db = new EasyDb();
+            db.SetConnectionStringSettings(InitDb.SqlConnectionString, InitDb.SqlProviderName);
+
+            var sql = "select * from users where id=@id";
+            var result = db.CreateCommand(sql).AddParameter("@id", 10, ParameterDirection.Output);
+
+            Assert.AreEqual("@id", result.Command.Parameters[0].ParameterName);
+            Assert.AreEqual(10, result.Command.Parameters[0].Value);
+            Assert.AreEqual(ParameterDirection.Output, result.Command.Parameters[0].Direction);
+            Assert.AreEqual(DbType.Int32, result.Command.Parameters[0].DbType);
+        }
+
+        [TestMethod]
+        public void TestAddParameter_WithDbTypeAndDirection()
+        {
+            var db = new EasyDb();
+            db.SetConnectionStringSettings(InitDb.SqlConnectionString, InitDb.SqlProviderName);
+
+            var sql = "select * from users where id=@id";
+            var result = db.CreateCommand(sql).AddParameter("@id", 10, DbType.Int16, ParameterDirection.Output);
+
+            Assert.AreEqual("@id", result.Command.Parameters[0].ParameterName);
+            Assert.AreEqual(10, result.Command.Parameters[0].Value);
+            Assert.AreEqual(ParameterDirection.Output, result.Command.Parameters[0].Direction);
+            Assert.AreEqual(DbType.Int16, result.Command.Parameters[0].DbType);
+        }
+
+
         // read all
 
         [TestMethod]

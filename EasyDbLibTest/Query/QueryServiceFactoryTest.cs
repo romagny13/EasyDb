@@ -23,15 +23,14 @@ namespace EasyDbLibTest
         [TestMethod]
         public void TestRegisterNew()
         {
-           
 
-            QueryServiceFactory.Set("MySql.Data.MySqlClient", new QueryService());
+            QueryServiceFactory.Set("MyProvider", new MyCustomQueryService1());
 
-            Assert.IsTrue(QueryServiceFactory.Has("MySql.Data.MySqlClient"));
+            Assert.IsTrue(QueryServiceFactory.Has("MyProvider"));
 
-            var service = QueryServiceFactory.Get("System.Data.SqlClient");
+            var service = QueryServiceFactory.Get("MyProvider");
 
-            Assert.AreEqual(typeof(QueryService), service.GetType());
+            Assert.AreEqual(typeof(MyCustomQueryService1), service.GetType());
         }
 
         [TestMethod]
@@ -73,4 +72,7 @@ namespace EasyDbLibTest
         // override methods ... example 
 
     }
+
+    public class MyCustomQueryService1 : QueryService
+    { }
 }

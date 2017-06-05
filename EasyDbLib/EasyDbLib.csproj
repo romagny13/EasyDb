@@ -65,7 +65,8 @@
     <Compile Include="Query\InsertQuery.cs" />
     <Compile Include="Query\OneToManyRelation.cs" />
     <Compile Include="Query\ManyToManyRelation.cs" />
-    <Compile Include="Query\QueryServiceFactory.cs" />
+    <Compile Include="Query\Services\MySQLQueryService.cs" />
+    <Compile Include="Query\Services\QueryServiceFactory.cs" />
     <Compile Include="Query\ConditionAndParameterContainer.cs" />
     <Compile Include="Query\Conditions\Check.cs" />
     <Compile Include="Query\Conditions\CheckBetween.cs" />
@@ -73,12 +74,12 @@
     <Compile Include="Query\Conditions\CheckNull.cs" />
     <Compile Include="Query\Conditions\CheckOp.cs" />
     <Compile Include="Query\Conditions\OrderedCondition.cs" />
-    <Compile Include="Query\IQueryService.cs" />
+    <Compile Include="Query\Services\IQueryService.cs" />
     <Compile Include="Query\ConditionAndParameter.cs" />
     <Compile Include="Query\IRelation.cs" />
     <Compile Include="Query\ZeroOneRelation.cs" />
     <Compile Include="Query\SelectQuery.cs" />
-    <Compile Include="Query\QueryService.cs" />
+    <Compile Include="Query\Services\QueryService.cs" />
     <Compile Include="Query\UpdateQuery.cs" />
     <Compile Include="Core\Singleton.cs" />
   </ItemGroup>
