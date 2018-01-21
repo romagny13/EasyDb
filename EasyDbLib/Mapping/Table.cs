@@ -1,112 +1,59 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
+using System.Linq;
+using System.Linq.Expressions;
 
 namespace EasyDbLib
 {
-
-    public class Table
+    public class Table<TModel> : ITable where TModel : class, new()
     {
-        internal Dictionary<string, Column> columns;
+        public bool IgnoreCase { get; set; }
 
         public string TableName { get; }
-        public bool HasNoColumnOrOnlyKeys { get; protected set; }
+
+        public Type ModelType => typeof(TModel);
+
+        internal Dictionary<string, Column> mappingByColumnName;
+        public IReadOnlyDictionary<string, Column> MappingByColumnName => mappingByColumnName;
+
+        public PrimaryKeyColumn[] PrimaryKeys => (this.mappingByColumnName.Values
+           .Where(p => p.GetType() == typeof(PrimaryKeyColumn))
+           .Select(p => (PrimaryKeyColumn)p))
+           ?.ToArray();
 
         public Table(string tableName)
         {
+            this.mappingByColumnName = new Dictionary<string, Column>();
             this.TableName = tableName;
-            this.HasNoColumnOrOnlyKeys = true;
-            this.columns = new Dictionary<string, Column>();
+            this.IgnoreCase = true;
         }
 
-        protected void CheckPropertyName(string propertyName)
+        public Table<TModel> SetPrimaryKeyColumn<TPropertyType>(string columnName, Expression<Func<TModel, TPropertyType>> propertyExpression, bool isDatabaseGenerated = true, bool isIgnored = false)
         {
-            if (!NameChecker.CheckPropertyName(propertyName))
-            {
-                throw new Exception("Invalid property name " + propertyName);
-            }
-        }
+            Guard.IsNullOrEmpty(columnName);
+            if (this.mappingByColumnName.ContainsKey(columnName)) { Guard.Throw("Column with column name " + columnName + " already registered"); }
 
-        public Table SetColumn(string columnName, string propertyName, DbType dbType, bool ignore = false)
-        {
-            this.CheckPropertyName(propertyName);
-            this.columns[columnName] = new Column(columnName, propertyName, dbType, ignore);
-            this.HasNoColumnOrOnlyKeys = false;
+            this.mappingByColumnName[columnName] = new PrimaryKeyColumn(TableName, typeof(TModel), columnName, ExpressionHelper.GetPropertyFromExpression(propertyExpression), isDatabaseGenerated, isIgnored);
             return this;
         }
 
-        public Table SetColumn(string columnName, string propertyName, bool ignore = false)
+        public Table<TModel> SetColumn<TPropertyType>(string columnName, Expression<Func<TModel, TPropertyType>> propertyExpression, bool isDatabaseGenerated = false, bool isIgnored = false)
         {
-            this.CheckPropertyName(propertyName);
-            this.columns[columnName] = new Column(columnName, propertyName, null, ignore);
-            this.HasNoColumnOrOnlyKeys = false;
+            Guard.IsNullOrEmpty(columnName);
+            if (this.mappingByColumnName.ContainsKey(columnName)) { Guard.Throw("Column with column name " + columnName + " already registered"); }
+
+            this.mappingByColumnName[columnName] = new Column(TableName, typeof(TModel), columnName, ExpressionHelper.GetPropertyFromExpression(propertyExpression), isDatabaseGenerated, isIgnored);
             return this;
         }
 
-        public Table SetPrimaryKeyColumn(string columnName, string propertyName, DbType dbType, bool ignore= false)
+        public bool ContainsProperty(string propertyName)
         {
-            CheckPropertyName(propertyName);
-            this.columns[columnName] = new PrimaryKeyColumn(columnName, propertyName, dbType, ignore);
-            return this;
+            return this.mappingByColumnName.Values.FirstOrDefault(p => p.PropertyName == propertyName) != null;
         }
 
-        public Table SetPrimaryKeyColumn(string columnName, string propertyName,  bool ignore = false)
+        public Column GetColumnByPropertyName(string propertyName)
         {
-            this.CheckPropertyName(propertyName);
-            this.columns[columnName] = new PrimaryKeyColumn(columnName, propertyName, null, ignore);
-            return this;
-        }
-
-        public Table SetForeignKeyColumn(string columnName, string propertyName, string tableReferenced, string primaryKeyReferenced, DbType dbType, bool ignore = false)
-        {
-            this.CheckPropertyName(propertyName);
-            this.columns[columnName] = new ForeignKeyColumn(columnName, tableReferenced, primaryKeyReferenced, propertyName, dbType, ignore);
-            return this;
-        }
-
-        public Table SetForeignKeyColumn(string columnName, string propertyName, string tableReferenced, string primaryKeyReferenced, bool ignore = false)
-        {
-            this.CheckPropertyName(propertyName);
-            this.columns[columnName] = new ForeignKeyColumn(columnName, tableReferenced, primaryKeyReferenced, propertyName, null, ignore);
-            return this;
-        }
-
-        public bool HasColumn(string columnName)
-        {
-            return this.columns.ContainsKey(columnName);
-        }
-
-        public Column GetColumn(string columnName)
-        {
-            if (!this.HasColumn(columnName)) { throw new Exception("No column registered for " + columnName + " in the mapping of " + this.TableName); }
-
-            return this.columns[columnName];
-        }
-
-        public PrimaryKeyColumn[] GetPrimaryKeys()
-        {
-            var result = new List<PrimaryKeyColumn>();
-            foreach (var column in this.columns)
-            {
-                if (column.Value.GetType() == typeof(PrimaryKeyColumn))
-                {
-                    result.Add((PrimaryKeyColumn)column.Value);
-                }
-            }
-            return result.ToArray();
-        }
-
-        public ForeignKeyColumn[] GetForeignKeys(string tableReferenced)
-        {
-            var result = new List<ForeignKeyColumn>();
-            foreach (var column in this.columns)
-            {
-                if (column.Value.GetType() == typeof(ForeignKeyColumn) && ((ForeignKeyColumn) column.Value).TableReferenced == tableReferenced)
-                {
-                    result.Add((ForeignKeyColumn)column.Value);
-                }
-            }
-            return result.ToArray();
-        }
+            return this.mappingByColumnName.Values.FirstOrDefault(p => p.PropertyName == propertyName);
+        }       
     }
 }

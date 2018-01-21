@@ -1,12 +1,19 @@
 ﻿using System;
-using System.Data;
+using System.Reflection;
 
 namespace EasyDbLib
 {
     public class PrimaryKeyColumn : Column
     {
-        public PrimaryKeyColumn(string columnName, string propertyName, DbType? dbType, bool ignore)
-            : base(columnName, propertyName, dbType, ignore)
+        public PrimaryKeyColumn(
+            string tableName,
+            Type modelType,
+            string columnName,
+            PropertyInfo property,
+            bool isDatabaseGenerated,
+            bool ignore)
+            : base(tableName, modelType, columnName, property, isDatabaseGenerated, ignore)
         { }
+
     }
 }

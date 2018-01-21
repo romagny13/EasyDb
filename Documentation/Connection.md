@@ -1,22 +1,52 @@
 # Connection
 
+> EasyDb use System.Data.Common (DbConnection, DbCommand, etc.).
+
+* Connection
+  * Connection Strategy
+* providers :
+  * System.Data.SqlClient : Sql Server
+  * System.Data.OleDb : Access
+  * MySql.Data.MySqlClient (MySQL with [MySQLConnector for .NET](https://dev.mysql.com/downloads/connector/net/))
+
+* Query Services :
+  * SqlQueryService (System.Data.SqlClient)
+  * OleDbQueryService (System.Data.OleDb)
+  * MySqlQueryService (MySql.Data.MySqlClient)
+
 ## Connection String
 
 Set the **Connection String**
 
-```cs
-var connectionString = @"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=C:\path\to\file.mdf;Integrated Security=True;Connect Timeout=30";
-var providerName = "System.Data.SqlClient";
+Examples:
 
-EasyDb.Default.SetConnectionStringSettings(connectionString,providerName);
+Sql Server
+
+```cs
+var db = new EasyDb();
+db.SetConnectionStringSettings(@"Data Source=(LocalDb)\MSSQLLocalDB;Initial Catalog=WpfEFDb;Integrated Security=True","System.Data.SqlClient");
+```
+
+OleDb
+
+```cs
+var db = new EasyDb();
+db.SetConnectionStringSettings(@"Provider=Microsoft.Jet.OLEDB.4.0;Data Source=C:\NorthWind.mdb","System.Data.OleDb");
+```
+
+MySql
+
+```cs
+var db = new EasyDb();
+db.SetConnectionStringSettings(@"server=localhost;database=testdb;uid=root", "MySql.Data.MySqlClient");
 ```
 
 With a **Configuration File**
 
 ```cs
-EasyDb.Default.SetConnectionStringSettings(); // "Default" connection
+db.SetConnectionStringSettings(); // "DefaultConnection"
 // or
-EasyDb.Default.SetConnectionStringSettings("MyConnection");
+db.SetConnectionStringSettings("MyConnection");
 ```
 _Example_
 
@@ -25,7 +55,7 @@ _Example_
 <configuration>
 
   <connectionStrings>
-    <add name="Default"
+    <add name="DefaultConnection"
          connectionString="Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=C:\path\to\mydb.mdf;Integrated Security=True;Connect Timeout=20"
          providerName="System.Data.SqlClient" />
     <add name="MyConnection"
@@ -36,84 +66,121 @@ _Example_
 </configuration>
 ```
 
-# Connection Strategy
+## Connection Strategy
 
-> EasyDb use System.Data.Common (DbConnection, DbCommand, etc.).
+* **Auto** (by default): the connection is **opened** and **closed** after **command execution**.
+* **Manual**
 
-By **default** the connection is **opened** and **closed** for **each request**.
+It's possible to change this behavior (usefull for example for **transactions**)
 
 ```cs
-EasyDb.Default.SetConnectionStringSettings(connectionString, providerName, ConnectionStrategy.Manual);
-
-var result = await EasyDb.Default.CreateCommand("select * from users where [id]=@id")
-                                 .AddParameter("@id", 1)
-                                 .ReadOneAsync<User>();
+db.SetConnectionStringSettings(connectionString, providerName, ConnectionStrategy.Manual;
+```
+Or 
+```cs
+db.SetConnectionStrategy(ConnectionStrategy.Manual);
+//
+db.SetConnectionStrategy(ConnectionStrategy.Auto);
 ```
 
-**Controlling** the **connection**.
+## Interceptor
+
+Allows to intercept commands (executing and executed with result or exception). Usefull for example to create a **Logger Interceptor**
+
+Implements **IDbInterceptor**
 
 ```cs
-EasyDb.Default.SetConnectionStringSettings(connectionString,providerName,ConnectionStrategy.Manual);
-```
-.. Or
-```cs
-EasyDb.Default.SetConnectionStrategy(ConnectionStrategy.Manual); // "Default" or "Manual"
-```
-_Then_
-```cs
-EasyDb.Default.SetConnectionStringSettings(connectionString, providerName, ConnectionStrategy.Manual);
-
-await EasyDb.Default.OpenAsync();
-
-var result = await EasyDb.Default.CreateCommand("select * from users where [id]=@id")
-                                 .AddParameter("@id", 1)
-                                 .ReadOneAsync<User>();
-
-EasyDb.Default.Close();
-```
-
-## Error handler
-
-```cs
-var db = new EasyDb();
-
-db.OnError += (sender, e) =>
+public class MyDbInterceptor : IDbInterceptor
 {
-  //... intercepted
-};
+    public void OnNonQueryExecuted(DbCommand command, DbInterceptionContext<int> interceptionContext)
+    { }
 
-db.SetConnectionStringSettings("invalid", "invalid"); // exception ...
+    public void OnNonQueryExecuting(DbCommand command)
+    { }
+
+    public void OnScalarExecuted(DbCommand command, DbInterceptionContext<object> interceptionContext)
+    { }
+
+    public void OnScalarExecuting(DbCommand command)
+    { }
+
+    public void OnSelectAllExecuted<TModel>(DbCommand command, DbInterceptionContext<List<TModel>> interceptionContext)
+    { }
+
+    public void OnSelectAllExecuting(DbCommand command)
+    { }
+
+    public void OnSelectOneExecuted<TModel>(DbCommand command, DbInterceptionContext<TModel> interceptionContext)
+    { }
+
+    public void OnSelectOneExecuting(DbCommand command)
+    { }
+}
 ```
 
-## Create an EasyDb instance or use Default Static instance
-
-Use the default **Static** instance
+... or inherits from DbInterceptorBase and override only methods needed
 
 ```cs
-EasyDb.Default.SetConnectionStringSettings("MyConnection");
-
-var user = await EasyDb.Default
-                       .CreateCommand("select * from [users] where [id]=@id")
-                       .AddParameter("@id", 1)
-                       .ReadOneAsync<User>();
+public class MyDbInterceptor : DbInterceptor
+{
+    public override void OnSelectOneExecuted<TModel>(DbCommand command, DbInterceptionContext<TModel> interceptionContext)
+    {
+        
+    }
+}
 ```
 
-... Or **create an instance**
+## Not handle execution exceptions
+
 
 ```cs
-IEasyDb db = new EasyDb();
+ db.HandleExecutionExceptions = false;
+ ```
 
-db.SetConnectionStringSettings("MyConnection");
+ Note: argument exceptions are not ignored
 
-var user = await db.CreateCommand("select * from [users] where [id]=@id")
-                   .AddParameter("@id", 1)
-                   .ReadOneAsync<User>();
+
+## Query Services
+
+# Query Services
+
+EasyDb support by default 3 Providers:
+* "_System.Data.SqlClient_" (Sql Server)
+* "_System.Data.OleDb_" (Access)
+* "_MySql.Data.MySqlClient_" (MySQL with [MySQLConnector for .NET](https://dev.mysql.com/downloads/connector/net/))
+
+For the other providers we have to create a custom Query Service.
+
+## Change/ Add a Query Service
+
+By **default** the Query Service targets **Sql Server** and wrap tables and columns with **quotes**.
+
+```sql
+select [permissions].*
+from [users_permissions],[permissions]
+where [users_permissions].[permission_id]=[permissions].[id] and [users_permissions].[user_id]=@user_id
 ```
 
-## Other usefull Connection methods
+Create a _custom service_ for example.
 
-* OpenAsync
-* Close
-* IsOpen
-* IsClosed
-* GetState
+```cs
+public class MyCustomQueryService : QueryService
+{
+     public MyCustomQueryService()
+      : base("`", "`")
+      { }
+
+      // override methods ...
+
+}
+```
+
+_Change the service_
+
+```cs
+EasyDb.Default.SetQueryService("MySql.Data.MySqlClient", new MyCustomQueryService());
+```
+
+
+
+
