@@ -10,6 +10,8 @@
 
 ## Installation
 
+With [NuGet](https://www.nuget.org/packages/EasyDb/)
+
 ```
 PM> Install-Package EasyDb
 ```
