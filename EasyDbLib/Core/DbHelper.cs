@@ -10,6 +10,30 @@ namespace EasyDbLib
 {
     public class DbHelper
     {
+        public static bool IsTypeAllowed(Type type)
+        {
+            if (type == typeof(string) || type.IsValueType)
+            {
+                return true;
+            }
+            else
+            {
+                var allowedTypes = new List<Type>
+                {
+                    typeof(Byte[]),
+                    typeof(Char[])
+                };
+                foreach (var allowedType in allowedTypes)
+                {
+                    if (allowedType == type)
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        }
+
         public static void AddParameter(DbCommand command, string name, object value, ParameterDirection parameterDirection, DbType? dbType = null)
         {
             var parameter = command.CreateParameter();
@@ -35,7 +59,7 @@ namespace EasyDbLib
             foreach (var property in properties)
             {
                 var propertyType = property.PropertyType;
-                if (propertyType == typeof(string) || propertyType.IsValueType)
+                if (IsTypeAllowed(propertyType))
                 {
                     if (mapping != null)
                     {
@@ -92,7 +116,7 @@ namespace EasyDbLib
             foreach (var property in properties)
             {
                 var propertyType = property.PropertyType;
-                if (propertyType == typeof(string) || propertyType.IsValueType)
+                if (IsTypeAllowed(propertyType))
                 {
                     var value = property.GetValue(model);
                     if (mapping != null)
@@ -129,7 +153,7 @@ namespace EasyDbLib
             foreach (var property in properties)
             {
                 var propertyType = property.PropertyType;
-                if (propertyType == typeof(string) || propertyType.IsValueType)
+                if (IsTypeAllowed(propertyType))
                 {
                     var value = property.GetValue(model);
                     if (mapping != null)
@@ -234,7 +258,7 @@ namespace EasyDbLib
             var properties = modelType.GetProperties();
             foreach (var property in properties)
             {
-                if (property.PropertyType == typeof(string) || property.PropertyType.IsValueType)
+                if (IsTypeAllowed(property.PropertyType))
                 {
                     var keyAttribute = property.GetCustomAttribute(typeof(KeyAttribute));
 

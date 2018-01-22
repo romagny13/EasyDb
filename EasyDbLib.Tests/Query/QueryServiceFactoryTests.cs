@@ -112,7 +112,7 @@ namespace EasyDbLib.Tests
 
     }
 
-    public class MyCustomQueryService : SqlQueryService
+    public class MyCustomQueryService : QueryServiceBase
     {
         //public MyCustomQueryService()
         //    : base("`", "`")
@@ -121,6 +121,6 @@ namespace EasyDbLib.Tests
         // override methods ... example 
     }
 
-    public class MyCustomQueryService1 : SqlQueryService
+    public class MyCustomQueryService1 : QueryServiceBase
     { }
 }
