@@ -74,7 +74,7 @@ public class UserInsertFactory : IInsertCommandFactory<User>
 
 ```cs
 var db = new EasyDb();
-db.SetConnectionStringSettings(Constants.ConnectionString, Constants.ProviderName);
+db.SetConnectionStringSettings("Data Source=(LocalDb)\MSSQLLocalDB;Initial Catalog=MyDb;Integrated Security=True", "System.Data.SqlClient");
 
 var user = new User
 {
