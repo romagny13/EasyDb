@@ -7,6 +7,7 @@
 * **Simple commands** with **SQL**
 * **Factories** for a better project structure
 * **QueryService** SqlClient, OleDb, MySqlClient with with [MySQLConnector for .NET](https://dev.mysql.com/downloads/connector/net/)
+* **Interceptors**
 * **No dependencies**. _Do not require to update the Model._
 
 ## Installation
