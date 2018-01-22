@@ -27,7 +27,7 @@ PM> Install-Package EasyDb
 </p>
 
 
-Examples:
+## Examples
 
 ```cs
 var db = new EasyDb();
