@@ -29,7 +29,7 @@ PM> Install-Package EasyDb
 
 ## Examples
 
-**SelectAllAsync**
+### SelectAllAsync
 
 ```cs
 var db = new EasyDb();
@@ -41,7 +41,7 @@ db.DefaultMappingBehavior = DefaultMappingBehavior.CreateEmptyTable;
 var users = await db.SelectAllAsync<User>(10, Check.Op("Age", ">", 18), new string[] { "UserName DESC" });
 ```
 
-**InsertAsync** with **Command Factory**
+### InsertAsync with Command Factory
 
 ```cs
 var db = new EasyDb();
