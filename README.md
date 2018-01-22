@@ -29,6 +29,8 @@ PM> Install-Package EasyDb
 
 ## Examples
 
+**SelectAllAsync**
+
 ```cs
 var db = new EasyDb();
 db.SetConnectionStringSettings("Data Source=(LocalDb)\MSSQLLocalDB;Initial Catalog=MyDb;Integrated Security=True", "System.Data.SqlClient");
@@ -39,7 +41,7 @@ db.DefaultMappingBehavior = DefaultMappingBehavior.CreateEmptyTable;
 var users = await db.SelectAllAsync<User>(10, Check.Op("Age", ">", 18), new string[] { "UserName DESC" });
 ```
 
-With **factory**
+**InsertAsync** with **Command Factory**
 
 ```cs
 var db = new EasyDb();
@@ -54,7 +56,7 @@ var user = new User
 var newId = await db.InsertAsync<User>(user);
 ```
 
-With **command factory**
+The **command factory**
 
 ```cs
 public class UserInsertFactory : IInsertCommandFactory<User>
@@ -71,6 +73,7 @@ public class UserInsertFactory : IInsertCommandFactory<User>
     }
 }
 ```
+**Execution**
 
 ```cs
 var db = new EasyDb();
