@@ -41,7 +41,7 @@ db.DefaultMappingBehavior = DefaultMappingBehavior.CreateEmptyTable;
 var users = await db.SelectAllAsync<User>(10, Check.Op("Age", ">", 18), new string[] { "UserName DESC" });
 ```
 
-### InsertAsync with Command Factory
+### InsertAsync
 
 ```cs
 var db = new EasyDb();
@@ -56,7 +56,7 @@ var user = new User
 var newId = await db.InsertAsync<User>(user);
 ```
 
-The **command factory**
+Or with **command factory**
 
 ```cs
 public class UserInsertFactory : IInsertCommandFactory<User>
@@ -73,7 +73,6 @@ public class UserInsertFactory : IInsertCommandFactory<User>
     }
 }
 ```
-**Execution**
 
 ```cs
 var db = new EasyDb();
