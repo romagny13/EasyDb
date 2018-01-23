@@ -563,8 +563,6 @@ namespace EasyDbLib
             object result = null;
             try
             {
-                var list = new List<string>();
-
                 if (transaction != null)
                 {
                     command.Transaction = transaction;
