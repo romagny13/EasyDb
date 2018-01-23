@@ -2,7 +2,7 @@
 
 namespace EasyDbLib
 {
-    public interface IInsertCommandFactory<TModel>
+    public interface IInsertCommandFactory<TModel> where TModel : class, new()
     {
         DbCommand CreateCommand(EasyDb db, TModel model);
 

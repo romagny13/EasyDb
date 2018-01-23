@@ -8,9 +8,12 @@ using System.Reflection;
 
 namespace EasyDbLib
 {
+    /// <summary>
+    /// Object to SQL conversion helper
+    /// </summary>
     public class DbHelper
     {
-        public static bool IsTypeAllowed(Type type)
+        public static bool IsAllowedType(Type type)
         {
             if (type == typeof(string) || type.IsValueType)
             {
@@ -18,7 +21,7 @@ namespace EasyDbLib
             }
             else
             {
-                var allowedTypes = new List<Type>
+                var allowedTypes = new Type[]
                 {
                     typeof(Byte[]),
                     typeof(Char[])
@@ -59,7 +62,7 @@ namespace EasyDbLib
             foreach (var property in properties)
             {
                 var propertyType = property.PropertyType;
-                if (IsTypeAllowed(propertyType))
+                if (IsAllowedType(propertyType))
                 {
                     if (mapping != null)
                     {
@@ -116,7 +119,7 @@ namespace EasyDbLib
             foreach (var property in properties)
             {
                 var propertyType = property.PropertyType;
-                if (IsTypeAllowed(propertyType))
+                if (IsAllowedType(propertyType))
                 {
                     var value = property.GetValue(model);
                     if (mapping != null)
@@ -153,7 +156,7 @@ namespace EasyDbLib
             foreach (var property in properties)
             {
                 var propertyType = property.PropertyType;
-                if (IsTypeAllowed(propertyType))
+                if (IsAllowedType(propertyType))
                 {
                     var value = property.GetValue(model);
                     if (mapping != null)
@@ -258,7 +261,7 @@ namespace EasyDbLib
             var properties = modelType.GetProperties();
             foreach (var property in properties)
             {
-                if (IsTypeAllowed(property.PropertyType))
+                if (IsAllowedType(property.PropertyType))
                 {
                     var keyAttribute = property.GetCustomAttribute(typeof(KeyAttribute));
 

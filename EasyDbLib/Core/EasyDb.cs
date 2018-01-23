@@ -256,17 +256,28 @@ namespace EasyDbLib
             return result;
         }
 
-        public async Task<List<TModel>> SelectAllAsync<TModel>(ISelectionAllCommandFactory<TModel> selectionAllCommandFactory,
-            IModelFactory<TModel> modelFactory) where TModel : class, new()
+        public async Task<List<TModel>> SelectAllAsync<TModel, TCriteria>(
+            ISelectionAllCommandFactory<TModel, TCriteria> selectionAllCommandFactory,
+            IModelFactory<TModel> modelFactory,
+            TCriteria criteria)
+            where TModel : class, new()
         {
             Guard.IsNull(selectionAllCommandFactory);
 
             TryGetTable<TModel>();
 
-            using (var command = selectionAllCommandFactory.CreateCommand(this))
+            using (var command = selectionAllCommandFactory.CreateCommand(this, criteria))
             {
                 return await this.SelectAllAsync<TModel>(command, modelFactory.CreateModel);
             }
+        }
+
+        public async Task<List<TModel>> SelectAllAsync<TModel>(
+          ISelectionAllCommandFactory<TModel, NullCriteria> selectionAllCommandFactory,
+          IModelFactory<TModel> modelFactory)
+          where TModel : class, new()
+        {
+            return await this.SelectAllAsync<TModel, NullCriteria>(selectionAllCommandFactory, modelFactory, new NullCriteria());
         }
 
         public async Task<List<TModel>> SelectAllAsync<TModel>(DbCommand command) where TModel : class, new()
@@ -292,20 +303,8 @@ namespace EasyDbLib
             }
         }
 
-        public async Task<TModel> SelectOneAsync<TModel>(ISelectionOneCommandFactory<TModel> selectionOneCommandFactory, TModel model,
-            IModelFactory<TModel> modelFactory) where TModel : class, new()
-        {
-            Guard.IsNull(selectionOneCommandFactory);
-
-            TryGetTable<TModel>();
-
-            using (var command = selectionOneCommandFactory.CreateCommand(this, model))
-            {
-                return await this.SelectOneAsync<TModel>(command, modelFactory.CreateModel);
-            }
-        }
-
-        public async Task<TModel> SelectOneAsync<TModel>(DbCommand command, Func<IDataReader, EasyDb, TModel> modelFactory) where TModel : class, new()
+        public async Task<TModel> SelectOneAsync<TModel>(DbCommand command, Func<IDataReader, EasyDb, TModel> modelFactory)
+            where TModel : class, new()
         {
             Guard.IsNull(command);
             Guard.IsNull(modelFactory);
@@ -344,14 +343,32 @@ namespace EasyDbLib
             return model;
         }
 
-        public async Task<TModel> SelectOneAsync<TModel>(DbCommand command) where TModel : class, new()
+        public async Task<TModel> SelectOneAsync<TModel, TCriteria>(
+            ISelectionOneCommandFactory<TCriteria> selectionOneCommandFactory,
+            IModelFactory<TModel> modelFactory,
+            TCriteria criteria)
+            where TModel : class, new()
+        {
+            Guard.IsNull(selectionOneCommandFactory);
+
+            TryGetTable<TModel>();
+
+            using (var command = selectionOneCommandFactory.CreateCommand(this, criteria))
+            {
+                return await this.SelectOneAsync<TModel>(command, modelFactory.CreateModel);
+            }
+        }
+
+        public async Task<TModel> SelectOneAsync<TModel>(DbCommand command)
+            where TModel : class, new()
         {
             TryGetTable<TModel>();
 
             return await this.SelectOneAsync<TModel>(command, this.defaultModelFactory.CreateModel<TModel>);
         }
 
-        public async Task<TModel> SelectOneAsync<TModel>(Check condition, Func<IDataReader, EasyDb, TModel> modelFactory) where TModel : class, new()
+        public async Task<TModel> SelectOneAsync<TModel>(Check condition, Func<IDataReader, EasyDb, TModel> modelFactory)
+            where TModel : class, new()
         {
             using (var command = this.defaultSelectionOneCommandFactory.GetCommand<TModel>(condition))
             {
@@ -359,7 +376,8 @@ namespace EasyDbLib
             }
         }
 
-        public async Task<TModel> SelectOneAsync<TModel>(Check condition) where TModel : class, new()
+        public async Task<TModel> SelectOneAsync<TModel>(Check condition)
+            where TModel : class, new()
         {
             using (var command = this.defaultSelectionOneCommandFactory.GetCommand<TModel>(condition))
             {
@@ -367,7 +385,8 @@ namespace EasyDbLib
             }
         }
 
-        public async Task<object> InsertAsync<TModel>(DbCommand command, TModel model, Action<DbCommand, TModel, object> setNewId, DbTransaction transaction = null) where TModel : class, new()
+        public async Task<object> InsertAsync<TModel>(DbCommand command, TModel model, Action<DbCommand, TModel, object> setNewId, DbTransaction transaction = null)
+            where TModel : class, new()
         {
             Guard.IsNull(model);
 
@@ -385,7 +404,8 @@ namespace EasyDbLib
         }
 
         public async Task<object> InsertAsync<TModel>(IInsertCommandFactory<TModel> insertCommandFactory, TModel model,
-            DbTransaction transaction = null) where TModel : class, new()
+            DbTransaction transaction = null)
+            where TModel : class, new()
         {
             Guard.IsNull(insertCommandFactory);
             Guard.IsNull(model);
@@ -398,7 +418,8 @@ namespace EasyDbLib
             }
         }
 
-        public async Task<object> InsertAsync<TModel>(TModel model, DbTransaction transaction = null) where TModel : class, new()
+        public async Task<object> InsertAsync<TModel>(TModel model, DbTransaction transaction = null)
+            where TModel : class, new()
         {
             Guard.IsNull(model);
 
@@ -446,7 +467,11 @@ namespace EasyDbLib
             return await this.ExecuteNonQueryAsync(command, transaction);
         }
 
-        public async Task<int> DeleteAsync<TModel>(IDeleteCommandFactory<TModel> deleteCommandFactory, TModel model, DbTransaction transaction = null) where TModel : class, new()
+        public async Task<int> DeleteAsync<TModel>(
+            IDeleteCommandFactory<TModel> deleteCommandFactory,
+            TModel model,
+            DbTransaction transaction = null)
+            where TModel : class, new()
         {
             Guard.IsNull(deleteCommandFactory);
             Guard.IsNull(model);

@@ -2,8 +2,8 @@
 
 namespace EasyDbLib
 {
-    public interface ISelectionAllCommandFactory<TModel>
+    public interface ISelectionAllCommandFactory<TModel, TCriteria> where TModel : class, new()
     {
-        DbCommand CreateCommand(EasyDb db);
+        DbCommand CreateCommand(EasyDb db, TCriteria criteria);
     }
 }
