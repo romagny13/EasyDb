@@ -4,10 +4,13 @@ namespace EasyDbLib
     {
         public string Value { get; protected set; }
 
-        public CheckLike(string column, string value)
+        public bool IgnoreCase { get; }
+
+        public CheckLike(string column, string value, bool ignoreCase)
             : base(column)
         {
             this.Value = value;
+            this.IgnoreCase = ignoreCase;
         }
     }
 }

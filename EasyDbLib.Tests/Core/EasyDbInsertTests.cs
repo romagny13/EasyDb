@@ -21,7 +21,7 @@ namespace EasyDbLib.Tests.Core
         {
             var db = new EasyDb();
 
-            db.SetConnectionStringSettings(DbConstants.SqlFile, DbConstants.SqlProviderName);
+            db.SetConnectionStringSettings(DbConstants.SqlDb1, DbConstants.SqlProviderName);
 
             db.DefaultMappingBehavior = DefaultMappingBehavior.CreateEmptyTable;
 
@@ -41,7 +41,7 @@ namespace EasyDbLib.Tests.Core
         {
             var db = new EasyDb();
 
-            db.SetConnectionStringSettings(DbConstants.SqlFile, DbConstants.SqlProviderName);
+            db.SetConnectionStringSettings(DbConstants.SqlDb1, DbConstants.SqlProviderName);
 
             db.DefaultMappingBehavior = DefaultMappingBehavior.CreateEmptyTable;
 
@@ -70,7 +70,7 @@ namespace EasyDbLib.Tests.Core
         {
             var db = new EasyDb();
 
-            db.SetConnectionStringSettings(DbConstants.SqlFile, DbConstants.SqlProviderName);
+            db.SetConnectionStringSettings(DbConstants.SqlDb1, DbConstants.SqlProviderName);
 
             db.DefaultMappingBehavior = DefaultMappingBehavior.CreateEmptyTable;
 

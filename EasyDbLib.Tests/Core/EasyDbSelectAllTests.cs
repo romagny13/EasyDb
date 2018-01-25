@@ -23,7 +23,7 @@ namespace EasyDbLib.Tests.Core
         public async Task SelectAll()
         {
             var db = new EasyDb();
-            db.SetConnectionStringSettings(DbConstants.SqlFile, DbConstants.SqlProviderName);
+            db.SetConnectionStringSettings(DbConstants.SqlDb1, DbConstants.SqlProviderName);
 
             db.DefaultMappingBehavior = DefaultMappingBehavior.CreateEmptyTable;
 
@@ -49,7 +49,7 @@ namespace EasyDbLib.Tests.Core
         public async Task SelectAll_WithoutCompleteMappingAndeIgnoreCase_Fail()
         {
             var db = new EasyDb();
-            db.SetConnectionStringSettings(DbConstants.SqlFileLikeMySql, DbConstants.SqlProviderName);
+            db.SetConnectionStringSettings(DbConstants.SqlDbLikeMySql, DbConstants.SqlProviderName);
 
 
             var table = db.SetTable<User>("users")
@@ -79,7 +79,7 @@ namespace EasyDbLib.Tests.Core
         public async Task SelectAll_WithCompleteMappingAndeIgnoreCase_Success()
         {
             var db = new EasyDb();
-            db.SetConnectionStringSettings(DbConstants.SqlFileLikeMySql, DbConstants.SqlProviderName);
+            db.SetConnectionStringSettings(DbConstants.SqlDbLikeMySql, DbConstants.SqlProviderName);
 
             var table = db.SetTable<User>("users")
                 .SetPrimaryKeyColumn("id", p => p.Id)
@@ -112,7 +112,7 @@ namespace EasyDbLib.Tests.Core
         public async Task SelectAll_WithLimit()
         {
             var db = new EasyDb();
-            db.SetConnectionStringSettings(DbConstants.SqlFile, DbConstants.SqlProviderName);
+            db.SetConnectionStringSettings(DbConstants.SqlDb1, DbConstants.SqlProviderName);
 
             db.DefaultMappingBehavior = DefaultMappingBehavior.CreateEmptyTable;
 
@@ -134,7 +134,7 @@ namespace EasyDbLib.Tests.Core
         public async Task SelectAll_WithSorts()
         {
             var db = new EasyDb();
-            db.SetConnectionStringSettings(DbConstants.SqlFile, DbConstants.SqlProviderName);
+            db.SetConnectionStringSettings(DbConstants.SqlDb1, DbConstants.SqlProviderName);
 
             db.DefaultMappingBehavior = DefaultMappingBehavior.CreateEmptyTable;
 
@@ -156,7 +156,7 @@ namespace EasyDbLib.Tests.Core
         public async Task SelectAll_WithCondition()
         {
             var db = new EasyDb();
-            db.SetConnectionStringSettings(DbConstants.SqlFile, DbConstants.SqlProviderName);
+            db.SetConnectionStringSettings(DbConstants.SqlDb1, DbConstants.SqlProviderName);
 
             db.DefaultMappingBehavior = DefaultMappingBehavior.CreateEmptyTable;
 
@@ -173,7 +173,7 @@ namespace EasyDbLib.Tests.Core
         public async Task SelectAll_WithSelectionAllCommandFactory()
         {
             var db = new EasyDb();
-            db.SetConnectionStringSettings(DbConstants.SqlFile, DbConstants.SqlProviderName);
+            db.SetConnectionStringSettings(DbConstants.SqlDb1, DbConstants.SqlProviderName);
 
             db.DefaultMappingBehavior = DefaultMappingBehavior.CreateEmptyTable;
 
@@ -194,7 +194,7 @@ namespace EasyDbLib.Tests.Core
         public async Task SelectAll_WithModelFactory()
         {
             var db = new EasyDb();
-            db.SetConnectionStringSettings(DbConstants.SqlFile, DbConstants.SqlProviderName);
+            db.SetConnectionStringSettings(DbConstants.SqlDb1, DbConstants.SqlProviderName);
 
             db.DefaultMappingBehavior = DefaultMappingBehavior.CreateEmptyTable;
 
@@ -226,9 +226,9 @@ namespace EasyDbLib.Tests.Core
 
     }
 
-    public class UserSelectionAllFactory : ISelectionAllCommandFactory<User>
+    public class UserSelectionAllFactory : ISelectionAllCommandFactory<User, NullCriteria>
     {
-        public DbCommand CreateCommand(EasyDb db)
+        public DbCommand CreateCommand(EasyDb db, NullCriteria criteria)
         {
             return db.CreateSqlCommand("select * from [User]");
         }

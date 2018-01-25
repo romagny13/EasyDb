@@ -11,8 +11,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{3D8CA537
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EasyDbLib.Tests", "EasyDbLib.Tests\EasyDbLib.Tests.csproj", "{EC814479-C946-4D23-B69F-C9315C67E400}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WpfApp1", "WpfApp1\WpfApp1.csproj", "{703D7535-FE39-472B-9100-170ECC24DC3A}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,10 +25,6 @@ Global
 		{EC814479-C946-4D23-B69F-C9315C67E400}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EC814479-C946-4D23-B69F-C9315C67E400}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EC814479-C946-4D23-B69F-C9315C67E400}.Release|Any CPU.Build.0 = Release|Any CPU
-		{703D7535-FE39-472B-9100-170ECC24DC3A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{703D7535-FE39-472B-9100-170ECC24DC3A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{703D7535-FE39-472B-9100-170ECC24DC3A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{703D7535-FE39-472B-9100-170ECC24DC3A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -38,7 +32,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{7913BC3B-02E1-49B5-ACEF-A891A40C1DA3} = {AF4F9A48-5036-47F9-97C9-D8E2E85B2C04}
 		{EC814479-C946-4D23-B69F-C9315C67E400} = {3D8CA537-5B40-44AB-A517-846C9703E447}
-		{703D7535-FE39-472B-9100-170ECC24DC3A} = {3D8CA537-5B40-44AB-A517-846C9703E447}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {96A03ECF-6B44-4DB4-9655-9173FBADFAB5}

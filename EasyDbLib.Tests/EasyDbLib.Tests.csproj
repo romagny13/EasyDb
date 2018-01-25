@@ -57,7 +57,6 @@
     <Compile Include="Condition\CheckLikeTests.cs" />
     <Compile Include="Condition\CheckNullTests.cs" />
     <Compile Include="Condition\CheckOpTests.cs" />
-    <Compile Include="Condition\ConditionAndParameterContainerTests.cs" />
     <Compile Include="Core\CloneServiceTests.cs" />
     <Compile Include="Core\ConnectionWrapperTests.cs" />
     <Compile Include="Core\DbInterceptorTests.cs" />
@@ -98,15 +97,11 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="DBTests.mdf">
+    <Content Include="DbTest.mdf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="DbTests2.mdf">
+    <Content Include="DbTest2.mdf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="DBTests_log.ldf">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      <DependentUpon>DBTests.mdf</DependentUpon>
     </Content>
     <Content Include="mysql.sql" />
     <Content Include="NorthWind.mdb">

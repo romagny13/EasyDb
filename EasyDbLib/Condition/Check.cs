@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 
 namespace EasyDbLib
@@ -32,12 +31,12 @@ namespace EasyDbLib
             return new CheckOp(columnName, "=", value);
         }
 
-        public static CheckLike Like(string columnName, string value)
+        public static CheckLike Like(string columnName, string value, bool ignoreCase = false)
         {
             Guard.IsNullOrEmpty(columnName);
             Guard.IsNullOrEmpty(value);
 
-            return new CheckLike(columnName, value);
+            return new CheckLike(columnName, value, ignoreCase);
         }
 
         public static CheckBetween Between(string columnName, int value1, int value2)
@@ -61,9 +60,33 @@ namespace EasyDbLib
             return new CheckNull(columnName, true);
         }
 
+        private void SetRank(CheckOp condition)
+        {
+            var rank = 1;
+            var columnName = condition.ColumnName;
+            if (this is CheckOp && this.ColumnName == columnName)
+            {
+                rank += 1;
+            }
+            foreach (var subCondition in this.ChainedConditions)
+            {
+                if (subCondition.Condition is CheckOp
+                    && subCondition.Condition.ColumnName == columnName)
+                {
+                    rank += 1;
+                }
+            }
+            condition.Rank = rank;
+        }
+
         public Check And(Check condition)
         {
             Guard.IsNull(condition);
+
+            if (condition is CheckOp)
+            {
+                SetRank((CheckOp)condition);
+            }
 
             this.ChainedConditions.Add(new ChainedCondition("and", condition));
             return this;
@@ -72,6 +95,11 @@ namespace EasyDbLib
         public Check Or(Check condition)
         {
             Guard.IsNull(condition);
+
+            if (condition is CheckOp)
+            {
+                SetRank((CheckOp)condition);
+            }
 
             this.ChainedConditions.Add(new ChainedCondition("or", condition));
             return this;

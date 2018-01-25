@@ -89,19 +89,19 @@ namespace EasyDbLib
             return columns;
         }
 
-        public static bool IsInCondition(string columnName, ConditionAndParameterContainer condition = null)
+        public static bool IsInCondition(string columnName, Check condition = null)
         {
             if (condition != null)
             {
-                if (condition.Main.ColumnName == columnName)
+                if (condition.ColumnName == columnName)
                 {
                     return true;
                 }
-                if (condition.HasSubConditions)
+                if (condition.HasChainedConditions)
                 {
-                    foreach (var subCondition in condition.SubConditions)
+                    foreach (var subCondition in condition.ChainedConditions)
                     {
-                        if (subCondition.ColumnName == columnName)
+                        if (subCondition.Condition.ColumnName == columnName)
                         {
                             return true;
                         }
@@ -147,7 +147,8 @@ namespace EasyDbLib
             return columnValues;
         }
 
-        public static Dictionary<string, object> GetUpdateColumnValues<TModel>(TModel model, Table<TModel> mapping = null, ConditionAndParameterContainer condition = null) where TModel : class, new()
+        public static Dictionary<string, object> GetUpdateColumnValues<TModel>(TModel model, Table<TModel> mapping = null,
+            Check condition = null) where TModel : class, new()
         {
             // all columns, do not include database generated columns and ignored 
             var properties = typeof(TModel).GetProperties();
@@ -192,7 +193,8 @@ namespace EasyDbLib
             return columnValues;
         }
 
-        public static void AddParameterToCommand(DbCommand command, string parameterName, object value, ParameterDirection direction = ParameterDirection.Input)
+        public static void AddParameterToCommand(DbCommand command, string parameterName, object value,
+            ParameterDirection direction = ParameterDirection.Input)
         {
             if (!command.Parameters.Contains(parameterName))
             {
@@ -200,17 +202,28 @@ namespace EasyDbLib
             }
         }
 
-        public static void AddConditionParametersToCommand(DbCommand command, ConditionAndParameterContainer condition)
+        public static void AddConditionParametersToCommand(DbCommand command, Check condition, IQueryService queryService)
         {
-            AddParameterToCommand(command, condition.Main.ParameterName, condition.Main.ParameterValue);
-
-            if (condition.HasSubConditions)
+            if (condition is CheckOp)
             {
-                foreach (var subCondition in condition.SubConditions)
+                var parameterName = queryService.GetParameterName(condition.ColumnName);
+                AddParameterToCommand(command, parameterName, ((CheckOp)condition).Value);
+            }
+
+            if (condition.HasChainedConditions)
+            {
+                foreach (var chainedCondition in condition.ChainedConditions)
                 {
-                    if (subCondition.IsConditionOp)
+                    if (chainedCondition.Condition is CheckOp)
                     {
-                        AddParameterToCommand(command, subCondition.ParameterName, subCondition.ParameterValue);
+                        var asCheckOp = chainedCondition.Condition as CheckOp;
+
+                        var subParameterName = queryService.GetParameterName(asCheckOp.ColumnName);
+                        if (asCheckOp.Rank > 1)
+                        {
+                            subParameterName += asCheckOp.Rank.ToString();
+                        }
+                        AddParameterToCommand(command, subParameterName, asCheckOp.Value);
                     }
                 }
             }

@@ -4,11 +4,14 @@ namespace EasyDbLib.Tests
 {
     public class DbConstants
     {
-        public const string SqlFile = @"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=C:\Users\romag\source\repos\v4\2\EasyDbLib\EasyDbLib.Tests\DBTests.mdf;Integrated Security=True;Connect Timeout=30";
-        public const string SqlFileLikeMySql = @"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=C:\Users\romag\source\repos\v4\2\EasyDbLib\EasyDbLib.Tests\DBTests2.mdf;Integrated Security=True;Connect Timeout=30";
+        public const string SqlDb1
+            = @"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=C:\Users\romag\source\repos\v4\2\EasyDb\EasyDbLib.Tests\DbTest.mdf;Integrated Security=True;Connect Timeout=30";
+        public const string SqlDbLikeMySql
+            = @"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=C:\Users\romag\source\repos\v4\2\EasyDb\EasyDbLib.Tests\DbTest2.mdf;Integrated Security=True;Connect Timeout=30";
+
         public const string SqlProviderName = "System.Data.SqlClient";
         public const string OleDbConnectionString =
-              @"Provider=Microsoft.Jet.OLEDB.4.0;Data Source=C:\Users\romag\source\repos\v4\2\EasyDbLib\EasyDbLib.Tests\NorthWind.mdb";
+              @"Provider=Microsoft.Jet.OLEDB.4.0;Data Source=C:\Users\romag\source\repos\v4\2\EasyDb\EasyDbLib.Tests\NorthWind.mdb";
         public const string OleDbProviderName = "System.Data.OleDb";
     }
 
@@ -20,7 +23,7 @@ namespace EasyDbLib.Tests
             using (var connection = DbProviderFactories.GetFactory(DbConstants.SqlProviderName).CreateConnection())
             {
 
-                connection.ConnectionString = DbConstants.SqlFile;
+                connection.ConnectionString = DbConstants.SqlDb1;
                 using (var command = connection.CreateCommand())
                 {
                     connection.Open();
@@ -62,7 +65,7 @@ namespace EasyDbLib.Tests
                                         [UserId]     INT                   NOT NULL,
                                         [CategoryId] INT                   NULL,
                                         PRIMARY KEY CLUSTERED ([Id] ASC),
-                                        FOREIGN KEY ([UserId]) REFERENCES [dbo].[Users] ([Id]),
+                                        FOREIGN KEY ([UserId]) REFERENCES [dbo].[User] ([Id]),
                                         FOREIGN KEY ([CategoryId]) REFERENCES [dbo].[Category] ([Id])
                                     );
                                     CREATE TABLE [dbo].[UserGuid] (
@@ -111,7 +114,7 @@ namespace EasyDbLib.Tests
             using (var connection = DbProviderFactories.GetFactory(DbConstants.SqlProviderName).CreateConnection())
             {
 
-                connection.ConnectionString = DbConstants.SqlFileLikeMySql;
+                connection.ConnectionString = DbConstants.SqlDbLikeMySql;
                 using (var command = connection.CreateCommand())
                 {
                     connection.Open();
@@ -148,7 +151,7 @@ namespace EasyDbLib.Tests
                                         [user_id]     INT                   NOT NULL,
                                         [category_id] INT                   NULL,
                                         PRIMARY KEY CLUSTERED ([id] ASC),
-                                        FOREIGN KEY ([user_id]) REFERENCES [dbo].[Users] ([Id]),
+                                        FOREIGN KEY ([user_id]) REFERENCES [dbo].[users] ([Id]),
                                         FOREIGN KEY ([category_id]) REFERENCES [dbo].[categories] ([id])
                                     );
                                     CREATE TABLE [dbo].[UsersWithGuid] (

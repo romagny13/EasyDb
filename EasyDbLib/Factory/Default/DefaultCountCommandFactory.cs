@@ -11,7 +11,7 @@ namespace EasyDbLib
             this.db = db;
         }
 
-        public string GetQuery<TModel>(ConditionAndParameterContainer condition, Table<TModel> mapping = null) where TModel : class, new()
+        public string GetQuery<TModel>(Check condition, Table<TModel> mapping = null) where TModel : class, new()
         {
             // example: select count(*) from [Post] where [Id]=@id
 
@@ -21,17 +21,16 @@ namespace EasyDbLib
 
         public DbCommand GetCommand<TModel>(Check condition) where TModel : class, new()
         {
-            var conditionAndParameterContainer = condition != null ? new ConditionAndParameterContainer(condition, this.db.queryService) : null;
-
             var mapping = this.db.TryGetTable<TModel>();
-            var query = this.GetQuery(conditionAndParameterContainer, mapping);
+            var query = this.GetQuery(condition, mapping);
 
             var command = this.db.CreateSqlCommand(query);
 
             // add parameters name (@id) and value (sorted by affectation where [Id1]=@id1 and [Id2]=@id2 => add @id1 then @id2)
-            if (conditionAndParameterContainer != null)
+            if (condition != null)
             {
-                DbHelper.AddConditionParametersToCommand(command, conditionAndParameterContainer);
+                // add parameter name (@id) and value (only for CheckOp)
+                DbHelper.AddConditionParametersToCommand(command, condition, this.db.queryService);
             }
 
             return command;

@@ -19,7 +19,7 @@
             return limit.HasValue ? " limit " + limit : "";
         }
 
-        public override string GetSelect(int? limit, string[] columns, string tableName, ConditionAndParameterContainer condition, string[] sorts)
+        public override string GetSelect(int? limit, string[] columns, string tableName, Check condition, string[] sorts)
         {
             return this.GetSelect(null, columns)
               + this.GetFrom(tableName)

@@ -21,7 +21,7 @@ namespace EasyDbLib.Tests
             db.SetConnectionStringSettings(@"Data Source=(LocalDb)\MSSQLLocalDB;Initial Catalog=testdb;Integrated Security=True", "System.Data.SqlClient");
             service.SetDb(db);
 
-            var condition = new ConditionAndParameterContainer(Check.Op("Id", 10), QueryServiceFactory.Current);
+            var condition = Check.Op("Id", 10);
 
             var result = service.GetQuery<User>(condition);
 
@@ -41,7 +41,7 @@ namespace EasyDbLib.Tests
                .SetColumn("Name", p => p.UserName)
                .SetColumn("RoleId", p => p.RoleId, false, true);
 
-            var condition = new ConditionAndParameterContainer(Check.Op("Id", 10), QueryServiceFactory.Current);
+            var condition = Check.Op("Id", 10);
 
             var result = service.GetQuery<User>(condition, table);
 
@@ -57,7 +57,7 @@ namespace EasyDbLib.Tests
             db.SetConnectionStringSettings(@"Data Source=(LocalDb)\MSSQLLocalDB;Initial Catalog=testdb;Integrated Security=True", "System.Data.SqlClient");
             service.SetDb(db);
 
-            var condition = new ConditionAndParameterContainer(Check.Between("Id", 10, 20), QueryServiceFactory.Current);
+            var condition = Check.Between("Id", 10, 20);
 
             var result = service.GetQuery<User>(condition);
 
@@ -73,7 +73,7 @@ namespace EasyDbLib.Tests
             db.SetConnectionStringSettings(@"Data Source=(LocalDb)\MSSQLLocalDB;Initial Catalog=testdb;Integrated Security=True", "System.Data.SqlClient");
             service.SetDb(db);
 
-            var condition = new ConditionAndParameterContainer(Check.Like("Id", "%abc"), QueryServiceFactory.Current);
+            var condition = Check.Like("Id", "%abc");
 
             var result = service.GetQuery<User>(condition);
 
@@ -89,7 +89,7 @@ namespace EasyDbLib.Tests
             db.SetConnectionStringSettings(@"Data Source=(LocalDb)\MSSQLLocalDB;Initial Catalog=testdb;Integrated Security=True", "System.Data.SqlClient");
             service.SetDb(db);
 
-            var condition = new ConditionAndParameterContainer(Check.IsNull("Id"), QueryServiceFactory.Current);
+            var condition = Check.IsNull("Id");
 
             var result = service.GetQuery<User>(condition);
 
@@ -105,7 +105,7 @@ namespace EasyDbLib.Tests
             db.SetConnectionStringSettings(@"Data Source=(LocalDb)\MSSQLLocalDB;Initial Catalog=testdb;Integrated Security=True", "System.Data.SqlClient");
             service.SetDb(db);
 
-            var condition = new ConditionAndParameterContainer(Check.IsNotNull("Id"), QueryServiceFactory.Current);
+            var condition = Check.IsNotNull("Id");
 
             var result = service.GetQuery<User>(condition);
 
@@ -121,7 +121,7 @@ namespace EasyDbLib.Tests
             db.SetConnectionStringSettings(@"Data Source=(LocalDb)\MSSQLLocalDB;Initial Catalog=testdb;Integrated Security=True", "System.Data.SqlClient");
             service.SetDb(db);
 
-            var condition = new ConditionAndParameterContainer(Check.Op("Id", 10).And(Check.Op("RoleId", 5)), QueryServiceFactory.Current);
+            var condition = Check.Op("Id", 10).And(Check.Op("RoleId", 5));
 
             var result = service.GetQuery<User>(condition);
 
@@ -151,7 +151,7 @@ namespace EasyDbLib.Tests
             db.SetConnectionStringSettings(@"server=localhost;database=demo;uid=root", "MySql.Data.MySqlClient");
             service.SetDb(db);
 
-            var condition = new ConditionAndParameterContainer(Check.Op("Id", 10).And(Check.Op("RoleId", 5)), QueryServiceFactory.Current);
+            var condition = Check.Op("Id", 10).And(Check.Op("RoleId", 5));
 
             var result = service.GetQuery<User>(condition);
 

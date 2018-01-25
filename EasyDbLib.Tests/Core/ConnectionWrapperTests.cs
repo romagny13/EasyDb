@@ -11,7 +11,7 @@ namespace EasyDbLib.Tests
         [TestMethod]
         public async Task OpenClose_WithConnectionStrategyAuto()
         {
-            var service = new ConnectionWrapper(DbConstants.SqlFile, "System.Data.SqlClient", ConnectionStrategy.Auto);
+            var service = new ConnectionWrapper(DbConstants.SqlDb1, "System.Data.SqlClient", ConnectionStrategy.Auto);
 
             await service.CheckStrategyAndOpenAsync();
 
@@ -25,7 +25,7 @@ namespace EasyDbLib.Tests
         [TestMethod]
         public async Task OpenClose_WithConnectionStrategyManual()
         {
-            var service = new ConnectionWrapper(DbConstants.SqlFile, "System.Data.SqlClient", ConnectionStrategy.Manual);
+            var service = new ConnectionWrapper(DbConstants.SqlDb1, "System.Data.SqlClient", ConnectionStrategy.Manual);
 
             await service.CheckStrategyAndOpenAsync();
 

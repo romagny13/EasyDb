@@ -330,21 +330,38 @@ namespace EasyDbLib.Tests
         // where condition
 
         [TestMethod]
-        public void ConditionOp_WithNoOperator_IsEquals()
+        public void ConditionOp()
         {
-            var result = Check.Op("id", 10);
-            Assert.AreEqual("id", result.ColumnName);
-            Assert.AreEqual("=", result.Operator);
-            Assert.AreEqual(10, result.Value);
+            var service = this.GetService();
+
+            Assert.AreEqual("[id]=@id", service.GetConditionOp(Check.Op("id", 10)));
+            Assert.AreEqual("[id]>@id", service.GetConditionOp(Check.Op("id", ">", 10)));
         }
 
         [TestMethod]
-        public void ConditionOp_WithOperator()
+        public void ConditionLike()
         {
-            var result = Check.Op("id", ">", 10);
-            Assert.AreEqual("id", result.ColumnName);
-            Assert.AreEqual(">", result.Operator);
-            Assert.AreEqual(10, result.Value);
+            var service = this.GetService();
+
+            Assert.AreEqual("[id] like 'abc%'", service.GetLike(Check.Like("id", "abc%")));
+            Assert.AreEqual("lower([id]) like 'abc%'", service.GetLike(Check.Like("id", "abc%", true)));
+        }
+
+        [TestMethod]
+        public void ConditionBetween()
+        {
+            var service = this.GetService();
+
+            Assert.AreEqual("[id] between 10 and 20", service.GetBetween(Check.Between("id", 10, 20)));
+        }
+
+        [TestMethod]
+        public void ConditionNull()
+        {
+            var service = this.GetService();
+
+            Assert.AreEqual("[id] is null", service.GetNull(Check.IsNull("id")));
+            Assert.AreEqual("[id] is not null", service.GetNull(Check.IsNotNull("id")));
         }
 
         // get where
@@ -354,19 +371,44 @@ namespace EasyDbLib.Tests
         {
             var service = this.GetService();
             var condition = Check.Op("a", "<", 10).And(Check.Op("b", ">", 20)).Or(Check.Between("c", 60, 100));
-            var container = new ConditionAndParameterContainer(condition, new SqlQueryService());
-            var result = service.GetWhere(container);
+            var result = service.GetWhere(condition);
             Assert.AreEqual(" where [a]<@a and [b]>@b or [c] between 60 and 100", result);
         }
 
         [TestMethod]
-        public void GetWhere_RetrunsUniques()
+        public void GetWhere_ReturnsUniques()
         {
             var service = this.GetService();
-            var condition = Check.Op("a", "<", 10).And(Check.Op("a", ">", 20));
-            var container = new ConditionAndParameterContainer(condition, new SqlQueryService());
-            var result = service.GetWhere(container);
-            Assert.AreEqual(" where [a]<@a and [a]>@a2", result);
+            var condition = Check.Op("a", "<", 10)
+                .Or(Check.Op("a", ">", 20))
+                .Or(Check.Op("a", 30))
+                .Or(Check.Op("a", 40));
+            var result = service.GetWhere(condition);
+            Assert.AreEqual(" where [a]<@a or [a]>@a2 or [a]=@a3 or [a]=@a4", result);
+        }
+
+        [TestMethod]
+        public void GetWhere_ReturnsUniques2()
+        {
+            var service = this.GetService();
+            var condition = Check.Op("b", "<", 10)
+                .Or(Check.Op("a", ">", 20))
+                .Or(Check.Op("b", 30))
+                .Or(Check.Op("a", 40));
+            var result = service.GetWhere(condition);
+            Assert.AreEqual(" where [b]<@b or [a]>@a or [b]=@b2 or [a]=@a2", result);
+        }
+
+        [TestMethod]
+        public void GetWhere_ReturnsUniques3()
+        {
+            var service = this.GetService();
+            var condition = Check.Op("a", "<", 10)
+                .Or(Check.Op("a", ">", 20))
+                .Or(Check.Op("b", 30))
+                .Or(Check.Op("b", 40));
+            var result = service.GetWhere(condition);
+            Assert.AreEqual(" where [a]<@a or [a]>@a2 or [b]=@b or [b]=@b2", result);
         }
 
 

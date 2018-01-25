@@ -49,9 +49,6 @@
     <Compile Include="Condition\CheckOp.cs" />
     <Compile Include="Core\CloneService.cs" />
     <Compile Include="Condition\ChainedCondition.cs" />
-    <Compile Include="Condition\ChainedConditionAndParameter.cs" />
-    <Compile Include="Condition\ConditionAndParameter.cs" />
-    <Compile Include="Condition\ConditionAndParameterContainer.cs" />
     <Compile Include="Core\ConnectionWrapper.cs" />
     <Compile Include="Core\IEasyDb.cs" />
     <Compile Include="Core\Interceptor\DbInterceptionContext.cs" />
@@ -72,9 +69,9 @@
     <Compile Include="Core\ExpressionHelper.cs" />
     <Compile Include="Factory\Default\DefaultUpdateCommandFactory.cs" />
     <Compile Include="Factory\Default\IDefaultCountCommandFactory.cs" />
+    <Compile Include="Factory\Default\IDefaultDeleteCommandFactory.cs" />
     <Compile Include="Factory\Default\IDefaultInsertCommandFactory.cs" />
     <Compile Include="Factory\Default\IDefaultModelFactory.cs" />
-    <Compile Include="Factory\Default\IDefaultDeleteCommandFactory.cs" />
     <Compile Include="Factory\Default\IDefaultSelectionAllCommandFactory.cs" />
     <Compile Include="Factory\Default\IDefaultSelectionOneCommandFactory.cs" />
     <Compile Include="Factory\Default\IDefaultUpdateCommandFactory.cs" />

@@ -11,6 +11,14 @@ namespace EasyDbLib.Tests
     [TestClass]
     public class DbHelperTests
     {
+        // object to sql conversion
+        // model type / name => (mapping) => table name (model type name or mapping table name)
+        // properties => (mapping) => columns (mapping or property name)
+        // properties => parameters 
+        //          - column name (mapping or property name)
+        //          - parameter name @id (@ + lower case column name)
+
+
         [TestMethod]
         public void AddParameter()
         {
@@ -86,6 +94,40 @@ namespace EasyDbLib.Tests
         }
 
         [TestMethod]
+        public void AddParametersToCommand()
+        {
+            var factory = DbProviderFactories.GetFactory("System.Data.SqlClient");
+            var command = factory.CreateCommand();
+
+            //
+            var condition = Check.Op("a", 10).Or(Check.Op("a", 20)).Or(Check.Op("b", 30)).Or(Check.Op("b", 40));
+
+            DbHelper.AddConditionParametersToCommand(command, condition, new SqlQueryService());
+
+            Assert.AreEqual(4, command.Parameters.Count);
+
+            Assert.AreEqual("@a", command.Parameters[0].ParameterName);
+            Assert.AreEqual(10, command.Parameters[0].Value);
+            Assert.AreEqual(ParameterDirection.Input, command.Parameters[0].Direction);
+            Assert.AreEqual(DbType.Int32, command.Parameters[0].DbType);
+
+            Assert.AreEqual("@a2", command.Parameters[1].ParameterName);
+            Assert.AreEqual(20, command.Parameters[1].Value);
+            Assert.AreEqual(ParameterDirection.Input, command.Parameters[1].Direction);
+            Assert.AreEqual(DbType.Int32, command.Parameters[1].DbType);
+
+            Assert.AreEqual("@b", command.Parameters[2].ParameterName);
+            Assert.AreEqual(30, command.Parameters[2].Value);
+            Assert.AreEqual(ParameterDirection.Input, command.Parameters[2].Direction);
+            Assert.AreEqual(DbType.Int32, command.Parameters[2].DbType);
+
+            Assert.AreEqual("@b2", command.Parameters[3].ParameterName);
+            Assert.AreEqual(40, command.Parameters[3].Value);
+            Assert.AreEqual(ParameterDirection.Input, command.Parameters[3].Direction);
+            Assert.AreEqual(DbType.Int32, command.Parameters[3].DbType);
+        }
+
+        [TestMethod]
         public void GetSelectColumns()
         {
             var result = DbHelper.GetSelectColumns<User>();
@@ -128,9 +170,9 @@ namespace EasyDbLib.Tests
         [TestMethod]
         public void IsInCondition()
         {
-            var condition1 = new ConditionAndParameterContainer(Check.Op("Id", 1), new SqlQueryService());
-            var condition2 = new ConditionAndParameterContainer(Check.Op("RoleId", 5), new SqlQueryService());
-            var condition3 = new ConditionAndParameterContainer(Check.Op("RoleId", 5).And(Check.Op("Id", 1)), new SqlQueryService());
+            var condition1 = Check.Op("Id", 1);
+            var condition2 = Check.Op("RoleId", 5);
+            var condition3 = Check.Op("RoleId", 5).And(Check.Op("Id", 1));
 
             Assert.IsFalse(DbHelper.IsInCondition("Id"));
             Assert.IsFalse(DbHelper.IsInCondition("Id", null));
@@ -207,7 +249,7 @@ namespace EasyDbLib.Tests
         [TestMethod]
         public void GetUpdateColumns_WithNoMappingAndCondition_DoNotReturnColumnsInCondition()
         {
-            var condition1 = new ConditionAndParameterContainer(Check.Op("Id", 1), new SqlQueryService());
+            var condition1 = Check.Op("Id", 1);
 
             var result = DbHelper.GetUpdateColumnValues<User>(new User(), null, condition1);
 
@@ -219,7 +261,7 @@ namespace EasyDbLib.Tests
         [TestMethod]
         public void GetUpdateColumns_WithNoMappingAndCondition_DoNotReturnColumnsInCondition2()
         {
-            var condition3 = new ConditionAndParameterContainer(Check.Op("RoleId", 5).And(Check.Op("Id", 1)), new SqlQueryService());
+            var condition3 = Check.Op("RoleId", 5).And(Check.Op("Id", 1));
 
             var result = DbHelper.GetUpdateColumnValues<User>(new User(), null, condition3);
 
@@ -276,7 +318,7 @@ namespace EasyDbLib.Tests
             var factory = DbProviderFactories.GetFactory("System.Data.SqlClient");
             var command = factory.CreateCommand();
 
-            DbHelper.AddConditionParametersToCommand(command, new ConditionAndParameterContainer(Check.Op("Id", 1).And(Check.Op("RoleId", 5)), new SqlQueryService()));
+            DbHelper.AddConditionParametersToCommand(command, Check.Op("Id", 1).And(Check.Op("RoleId", 5)), new SqlQueryService());
 
             Assert.AreEqual(2, command.Parameters.Count);
 

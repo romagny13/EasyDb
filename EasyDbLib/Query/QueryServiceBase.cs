@@ -58,39 +58,75 @@ namespace EasyDbLib
             return limit.HasValue ? " top " + limit : "";
         }
 
-        public virtual string GetConditionOp(string op, string parameterName)
+        public virtual string GetConditionOp(CheckOp condition)
         {
-            return op + parameterName;
-        }
-
-        public virtual string GetLike(string value)
-        {
-            return " like '" + value + "'";
-        }
-
-        public virtual string GetBetween(int value1, int value2)
-        {
-            return " between " + value1 + " and " + value2;
-        }
-
-        public virtual string GetIsNull(bool isNull)
-        {
-            return isNull ? " is null" : " is not null";
-        }
-
-        public virtual string GetConditionString(ConditionAndParameterContainer condition)
-        {
-            // [Id]=@id
-            var result = this.FormatTableAndColumn(condition.Main.ColumnName) // [columnName]
-                + condition.Main.ValueString; // =@id
-
-            if (condition.HasSubConditions)
+            var left = this.FormatTableAndColumn(condition.ColumnName);
+            // get unique parameter name
+            var parameterName = this.GetParameterName(condition.ColumnName);
+            if(condition.Rank > 1)
             {
-                foreach (var subCondition in condition.SubConditions)
+                parameterName += condition.Rank.ToString();
+            }
+            return left + condition.Operator + parameterName;
+        }
+
+        public virtual string GetLike(CheckLike condition)
+        {
+            var left = condition.IgnoreCase ?
+                   "lower(" + this.FormatTableAndColumn(condition.ColumnName) + ")"
+                   : this.FormatTableAndColumn(condition.ColumnName);
+            return left + " like '" + condition.Value + "'";
+        }
+
+        public virtual string GetBetween(CheckBetween condition)
+        {
+            return this.FormatTableAndColumn(condition.ColumnName) + " between " + condition.Value1 + " and " + condition.Value2; ;
+        }
+
+        public virtual string GetNull(CheckNull condition)
+        {
+            var left = this.FormatTableAndColumn(condition.ColumnName);
+            return condition.ValueIsNull ? left + " is null" : left + " is not null";
+        }
+
+        protected virtual string CheckAndGetConditionString(Check condition)
+        {
+            if (condition.GetType() == typeof(CheckOp))
+            {
+                return this.GetConditionOp((CheckOp)condition);
+            }
+            else if (condition.GetType() == typeof(CheckLike))
+            {
+                return this.GetLike((CheckLike)condition);
+            }
+            else if (condition.GetType() == typeof(CheckBetween))
+            {
+                return this.GetBetween((CheckBetween)condition);
+            }
+            else if (condition.GetType() == typeof(CheckNull))
+            {
+                return this.GetNull((CheckNull)condition);
+            }
+            throw new Exception("Cannot resolve condition");
+        }
+
+        public virtual string GetConditionString(Check condition)
+        {
+            var result = "";
+            if (condition != null)
+            {
+                // main
+                result = this.CheckAndGetConditionString(condition);
+
+                if (condition.HasChainedConditions)
                 {
-                    result += " " + subCondition.Op // and
-                        + " " + this.FormatTableAndColumn(subCondition.ColumnName)  // [columnName]
-                        + subCondition.ValueString; // =@id2
+                    foreach (var subCondition in condition.ChainedConditions)
+                    {
+                        result += " "
+                            + subCondition.Operator // and 
+                            + " "
+                            + this.CheckAndGetConditionString(subCondition.Condition);
+                    }
                 }
             }
             return result;
@@ -165,7 +201,7 @@ namespace EasyDbLib
 
         // select
 
-        public virtual string GetSelect(int? limit, string[] columns, string tableName, ConditionAndParameterContainer condition, string[] sorts)
+        public virtual string GetSelect(int? limit, string[] columns, string tableName, Check condition, string[] sorts)
         {
             Guard.IsNullOrEmpty(tableName);
 
@@ -175,7 +211,7 @@ namespace EasyDbLib
               + this.GetOrderBy(sorts);
         }
 
-        public virtual string GetSelectCount(string tableName, ConditionAndParameterContainer condition)
+        public virtual string GetSelectCount(string tableName, Check condition)
         {
             Guard.IsNullOrEmpty(tableName);
 
@@ -197,7 +233,7 @@ namespace EasyDbLib
             return " from " + this.FormatTableAndColumn(tableName);
         }
 
-        public virtual string GetWhere(ConditionAndParameterContainer condition)
+        public virtual string GetWhere(Check condition)
         {
             if (condition != null)
             {
@@ -226,7 +262,7 @@ namespace EasyDbLib
 
         // update
 
-        public virtual string GetUpdate(string tableName, string[] columns, ConditionAndParameterContainer condition)
+        public virtual string GetUpdate(string tableName, string[] columns, Check condition)
         {
             Guard.IsNullOrEmpty(tableName);
             if (columns.Length == 0) { Guard.Throw("No column provided"); }
@@ -236,7 +272,7 @@ namespace EasyDbLib
 
         // delete
 
-        public virtual string GetDelete(string tableName, ConditionAndParameterContainer condition)
+        public virtual string GetDelete(string tableName, Check condition)
         {
             Guard.IsNullOrEmpty(tableName);
 

@@ -20,7 +20,7 @@ namespace EasyDbLib.Tests.Core
         public async Task SelectOne()
         {
             var db = new EasyDb();
-            db.SetConnectionStringSettings(DbConstants.SqlFile, DbConstants.SqlProviderName);
+            db.SetConnectionStringSettings(DbConstants.SqlDb1, DbConstants.SqlProviderName);
 
             db.DefaultMappingBehavior = DefaultMappingBehavior.CreateEmptyTable;
 
@@ -40,7 +40,7 @@ namespace EasyDbLib.Tests.Core
         public async Task SelectOne_WithoutCompleteMappingAndeIgnoreCase_Fail()
         {
             var db = new EasyDb();
-            db.SetConnectionStringSettings(DbConstants.SqlFileLikeMySql, DbConstants.SqlProviderName);
+            db.SetConnectionStringSettings(DbConstants.SqlDbLikeMySql, DbConstants.SqlProviderName);
 
 
             var table = db.SetTable<User>("users")
@@ -64,7 +64,7 @@ namespace EasyDbLib.Tests.Core
         public async Task SelectOne_WithCompleteMappingAndeIgnoreCase_Success()
         {
             var db = new EasyDb();
-            db.SetConnectionStringSettings(DbConstants.SqlFileLikeMySql, DbConstants.SqlProviderName);
+            db.SetConnectionStringSettings(DbConstants.SqlDbLikeMySql, DbConstants.SqlProviderName);
 
             var table = db.SetTable<User>("users")
                 .SetPrimaryKeyColumn("id", p => p.Id)
@@ -91,7 +91,7 @@ namespace EasyDbLib.Tests.Core
         public async Task SelectOne_WithCondition()
         {
             var db = new EasyDb();
-            db.SetConnectionStringSettings(DbConstants.SqlFile, DbConstants.SqlProviderName);
+            db.SetConnectionStringSettings(DbConstants.SqlDb1, DbConstants.SqlProviderName);
 
             db.DefaultMappingBehavior = DefaultMappingBehavior.CreateEmptyTable;
 
@@ -106,7 +106,7 @@ namespace EasyDbLib.Tests.Core
         public async Task SelectOne_WithSelectionOneCommandFactory()
         {
             var db = new EasyDb();
-            db.SetConnectionStringSettings(DbConstants.SqlFile, DbConstants.SqlProviderName);
+            db.SetConnectionStringSettings(DbConstants.SqlDb1, DbConstants.SqlProviderName);
 
             db.DefaultMappingBehavior = DefaultMappingBehavior.CreateEmptyTable;
 
@@ -126,7 +126,7 @@ namespace EasyDbLib.Tests.Core
         public async Task SelectOne_WithModelFactory()
         {
             var db = new EasyDb();
-            db.SetConnectionStringSettings(DbConstants.SqlFile, DbConstants.SqlProviderName);
+            db.SetConnectionStringSettings(DbConstants.SqlDb1, DbConstants.SqlProviderName);
 
             db.DefaultMappingBehavior = DefaultMappingBehavior.CreateEmptyTable;
 

@@ -40,7 +40,7 @@ namespace EasyDbLib.Tests
             db.SetConnectionStringSettings(@"Data Source=(LocalDb)\MSSQLLocalDB;Initial Catalog=testdb;Integrated Security=True", "System.Data.SqlClient");
             service.SetDb(db);
 
-            var condition = new ConditionAndParameterContainer(Check.Op("Id", 10), new SqlQueryService());
+            var condition = Check.Op("Id", 10);
             var model = new User { };
             var columnValues = DbHelper.GetUpdateColumnValues<User>(model, null, condition);
             var columns = new List<string>(columnValues.Keys);
@@ -59,7 +59,7 @@ namespace EasyDbLib.Tests
             db.SetConnectionStringSettings(@"Data Source=(LocalDb)\MSSQLLocalDB;Initial Catalog=testdb;Integrated Security=True", "System.Data.SqlClient");
             service.SetDb(db);
 
-            var condition = new ConditionAndParameterContainer(Check.Op("Id", 10).And(Check.Op("RoleId", 5)), new SqlQueryService());
+            var condition = Check.Op("Id", 10).And(Check.Op("RoleId", 5));
             var model = new User { };
             var columnValues = DbHelper.GetUpdateColumnValues<User>(model, null, condition);
             var columns = new List<string>(columnValues.Keys);
@@ -78,7 +78,7 @@ namespace EasyDbLib.Tests
             db.SetConnectionStringSettings(@"Data Source=(LocalDb)\MSSQLLocalDB;Initial Catalog=testdb;Integrated Security=True", "System.Data.SqlClient");
             service.SetDb(db);
 
-            var condition = new ConditionAndParameterContainer(Check.Op("Id", 10).And(Check.Op("RoleId", 5)), new SqlQueryService());
+            var condition = Check.Op("Id", 10).And(Check.Op("RoleId", 5));
             var table = new Table<User>("users")
                 .SetPrimaryKeyColumn("Id", p => p.Id)
                 .SetColumn("Name", p => p.UserName);
@@ -101,7 +101,7 @@ namespace EasyDbLib.Tests
             db.SetConnectionStringSettings(@"Data Source=(LocalDb)\MSSQLLocalDB;Initial Catalog=testdb;Integrated Security=True", "System.Data.SqlClient");
             service.SetDb(db);
 
-            var condition = new ConditionAndParameterContainer(Check.Op("Id", 10), new SqlQueryService());
+            var condition = Check.Op("Id", 10);
             var table = new Table<User>("users")
                 .SetPrimaryKeyColumn("Id", p => p.Id)
                 .SetColumn("Name", p => p.UserName, false, true);
@@ -124,7 +124,7 @@ namespace EasyDbLib.Tests
             db.SetConnectionStringSettings(@"Data Source=(LocalDb)\MSSQLLocalDB;Initial Catalog=testdb;Integrated Security=True", "System.Data.SqlClient");
             service.SetDb(db);
 
-            var condition = new ConditionAndParameterContainer(Check.Op("Id", 10), new SqlQueryService());
+            var condition = Check.Op("Id", 10);
             var table = new Table<User>("users")
                 .SetPrimaryKeyColumn("Id", p => p.Id)
                 .SetColumn("Name", p => p.UserName, true);

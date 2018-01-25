@@ -11,7 +11,7 @@ namespace EasyDbLib
             this.db = db;
         }
 
-        public string GetQuery<TModel>(int? limit, ConditionAndParameterContainer conditionAndParameterContainer, string[] sorts, Table<TModel> mapping = null) where TModel : class, new()
+        public string GetQuery<TModel>(int? limit, Check condition, string[] sorts, Table<TModel> mapping = null) where TModel : class, new()
         {
             // example select [Id],[UserName],[RoleId] where [RoleId]=@roleid
 
@@ -22,23 +22,21 @@ namespace EasyDbLib
             var tablename = mapping != null ? mapping.TableName : typeof(TModel).Name;
 
             // condition => where [RoleId]=@roleid and ...
-            return this.db.queryService.GetSelect(limit, columns.ToArray(), tablename, conditionAndParameterContainer, sorts);
+            return this.db.queryService.GetSelect(limit, columns.ToArray(), tablename, condition, sorts);
         }
 
         public DbCommand GetCommand<TModel>(int? limit, Check condition, string[] sorts) where TModel : class, new()
         {
             var mapping = this.db.TryGetTable<TModel>();
 
-            var conditionAndParameterContainer = condition != null ? new ConditionAndParameterContainer(condition, this.db.queryService) : null;
-
-            var query = this.GetQuery(limit, conditionAndParameterContainer, sorts, mapping);
+            var query = this.GetQuery(limit, condition, sorts, mapping);
 
             var command = this.db.CreateSqlCommand(query);
 
             // add parameters name (@roleid) and value (sorted by affectation where [Id1]=@id1 and [Id2]=@id2 => add @id1 then @id2)
-            if (conditionAndParameterContainer != null)
+            if (condition != null)
             {
-                DbHelper.AddConditionParametersToCommand(command, conditionAndParameterContainer);
+                DbHelper.AddConditionParametersToCommand(command, condition, this.db.queryService);
             }
 
             return command;

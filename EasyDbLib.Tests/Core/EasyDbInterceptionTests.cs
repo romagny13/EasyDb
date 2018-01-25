@@ -18,7 +18,7 @@ namespace EasyDbLib.Tests.Core
         public EasyDb GetService()
         {
             var db = new EasyDb();
-            db.SetConnectionStringSettings(DbConstants.SqlFile, DbConstants.SqlProviderName);
+            db.SetConnectionStringSettings(DbConstants.SqlDb1, DbConstants.SqlProviderName);
             return db;
         }
 
