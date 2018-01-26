@@ -3,7 +3,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using System.Data;
 
-namespace EasyDbLib.Tests
+namespace EasyDbLib.Tests.Factory
 {
     [TestClass]
     public class DefaultInsertCommandFactoryTests

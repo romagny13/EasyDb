@@ -2,7 +2,7 @@
 using System.Data;
 using System.Threading.Tasks;
 
-namespace EasyDbLib.Tests
+namespace EasyDbLib.Tests.Core
 {
     [TestClass]
     public class ConnectionWrapperTests

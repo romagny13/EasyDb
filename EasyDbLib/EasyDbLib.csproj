@@ -4,7 +4,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{7913BC3B-02E1-49B5-ACEF-A891A40C1DA3}</ProjectGuid>
+    <ProjectGuid>{90B4EE6E-BD16-44DA-8205-CF38536A25F0}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>EasyDbLib</RootNamespace>
@@ -39,34 +39,38 @@
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Core\CloneService.cs" />
+    <Compile Include="Condition\ChainedCondition.cs" />
     <Compile Include="Condition\Check.cs" />
     <Compile Include="Condition\CheckBetween.cs" />
     <Compile Include="Condition\CheckLike.cs" />
     <Compile Include="Condition\CheckNull.cs" />
     <Compile Include="Condition\CheckOp.cs" />
-    <Compile Include="Core\CloneService.cs" />
-    <Compile Include="Condition\ChainedCondition.cs" />
+    <Compile Include="Core\ConfigurationProtectionManager.cs" />
     <Compile Include="Core\ConnectionWrapper.cs" />
+    <Compile Include="Core\DbCommandExtensions.cs" />
+    <Compile Include="Core\DbHelper.cs" />
+    <Compile Include="Core\ExpressionHelper.cs" />
     <Compile Include="Core\IEasyDb.cs" />
+    <Compile Include="Core\Interceptor\ConcurrencyInterceptor.cs" />
     <Compile Include="Core\Interceptor\DbInterceptionContext.cs" />
     <Compile Include="Core\Interceptor\DbInterceptor.cs" />
     <Compile Include="Core\Interceptor\IDbInterceptor.cs" />
     <Compile Include="Core\Interceptor\IInterceptionManager.cs" />
     <Compile Include="Core\Interceptor\InterceptionManager.cs" />
+    <Compile Include="Core\Interceptor\OptimisticConcurrencyException.cs" />
+    <Compile Include="Core\EasyDb.cs" />
     <Compile Include="Core\NullCriteria.cs" />
     <Compile Include="Factory\Default\DefaultCountCommandFactory.cs" />
-    <Compile Include="Factory\Default\DefaultModelFactory.cs" />
-    <Compile Include="Factory\Default\DefaultSelectionOneCommandFactory.cs" />
-    <Compile Include="Factory\Default\DefaultSelectionAllCommandFactory.cs" />
     <Compile Include="Factory\Default\DefaultDeleteCommandFactory.cs" />
     <Compile Include="Factory\Default\DefaultInsertCommandFactory.cs" />
-    <Compile Include="Core\DbCommandExtensions.cs" />
-    <Compile Include="Core\DbHelper.cs" />
-    <Compile Include="Core\EasyDb.cs" />
-    <Compile Include="Core\ExpressionHelper.cs" />
+    <Compile Include="Factory\Default\DefaultModelFactory.cs" />
+    <Compile Include="Factory\Default\DefaultSelectionAllCommandFactory.cs" />
+    <Compile Include="Factory\Default\DefaultSelectionOneCommandFactory.cs" />
     <Compile Include="Factory\Default\DefaultUpdateCommandFactory.cs" />
     <Compile Include="Factory\Default\IDefaultCountCommandFactory.cs" />
     <Compile Include="Factory\Default\IDefaultDeleteCommandFactory.cs" />
@@ -76,16 +80,16 @@
     <Compile Include="Factory\Default\IDefaultSelectionOneCommandFactory.cs" />
     <Compile Include="Factory\Default\IDefaultUpdateCommandFactory.cs" />
     <Compile Include="Factory\IDeleteCommandFactory.cs" />
-    <Compile Include="Factory\IModelFactory.cs" />
     <Compile Include="Factory\IInsertCommandFactory.cs" />
+    <Compile Include="Factory\IModelFactory.cs" />
     <Compile Include="Factory\ISelectionAllCommandFactory.cs" />
     <Compile Include="Factory\ISelectionOneCommandFactory.cs" />
     <Compile Include="Factory\IUpdateCommandFactory.cs" />
     <Compile Include="Factory\Transaction\IPendingOperationManager.cs" />
     <Compile Include="Factory\Transaction\PendingOperationManager.cs" />
     <Compile Include="Factory\Transaction\TransactionOperation.cs" />
+    <Compile Include="Core\Guard.cs" />
     <Compile Include="Core\ICloneService.cs" />
-    <Compile Include="Guard.cs" />
     <Compile Include="Mapping\Column.cs" />
     <Compile Include="Mapping\IMappingContainer.cs" />
     <Compile Include="Mapping\ITable.cs" />
@@ -98,9 +102,8 @@
     <Compile Include="Query\OleDbQueryService.cs" />
     <Compile Include="Query\QueryServiceBase.cs" />
     <Compile Include="Query\QueryServiceFactory.cs" />
-    <Compile Include="Core\Singleton.cs" />
     <Compile Include="Query\SqlQueryService.cs" />
+    <Compile Include="Core\Singleton.cs" />
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

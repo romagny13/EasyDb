@@ -1,17 +1,22 @@
-﻿using System.Collections.Generic;
-using System.Data.Common;
+﻿using System.Data.Common;
 
 namespace EasyDbLib
 {
     public interface IDbInterceptor
     {
-        void OnNonQueryExecuted(DbCommand command, DbInterceptionContext<int> interceptionContext);
+        void OnDeleted(DbCommand command, DbInterceptionContext interceptionContext);
+        void OnDeleting(DbCommand command, object model);
+        void OnInserted(DbCommand command, DbInterceptionContext interceptionContext);
+        void OnInserting(DbCommand command, object model);
+        void OnNonQueryExecuted(DbCommand command, DbInterceptionContext interceptionContext);
         void OnNonQueryExecuting(DbCommand command);
-        void OnScalarExecuted(DbCommand command, DbInterceptionContext<object> interceptionContext);
+        void OnScalarExecuted(DbCommand command, DbInterceptionContext interceptionContext);
         void OnScalarExecuting(DbCommand command);
-        void OnSelectAllExecuted<TModel>(DbCommand command, DbInterceptionContext<List<TModel>> interceptionContext);
+        void OnSelectAllExecuted(DbCommand command, DbInterceptionContext interceptionContext);
         void OnSelectAllExecuting(DbCommand command);
-        void OnSelectOneExecuted<TModel>(DbCommand command, DbInterceptionContext<TModel> interceptionContext);
+        void OnSelectOneExecuted(DbCommand command, DbInterceptionContext interceptionContext);
         void OnSelectOneExecuting(DbCommand command);
+        void OnUpdated(DbCommand command, DbInterceptionContext interceptionContext);
+        void OnUpdating(DbCommand command, object model);
     }
 }

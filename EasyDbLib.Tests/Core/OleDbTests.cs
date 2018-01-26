@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using EasyDbLib;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace EasyDbLib.Tests
+namespace EasyDbLib.Tests.Core
 {
     [TestClass]
     public class OleDbTests
@@ -104,7 +104,8 @@ namespace EasyDbLib.Tests
         {
             var db = GetService();
 
-            var result = await db.DeleteAsync<OleDbCategory>(Check.Op("CategoryID", 9));
+            var cat = await db.SelectOneAsync<OleDbCategory>(Check.Op("CategoryID", 9));
+            var result = await db.DeleteAsync<OleDbCategory>(cat, Check.Op("CategoryID", 9));
 
             Assert.AreEqual(1, result);
         }

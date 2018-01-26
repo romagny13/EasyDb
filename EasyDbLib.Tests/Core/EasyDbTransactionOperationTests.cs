@@ -1,5 +1,4 @@
-﻿using EasyDbLib.Tests.Common;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Threading.Tasks;
 
 namespace EasyDbLib.Tests.Core
@@ -68,8 +67,9 @@ namespace EasyDbLib.Tests.Core
             {
                 await db.InsertAsync<User>(new User { UserName = "u4" });
 
+                var user = await db.SelectOneAsync<User>(Check.Op("Id", 1));
                 // constraint on user permission
-                await db.DeleteAsync<User>(Check.Op("Id", 1));
+                await db.DeleteAsync<User>(user, Check.Op("Id", 1));
             }
             catch (System.Exception ex)
             {

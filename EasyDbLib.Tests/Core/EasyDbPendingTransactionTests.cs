@@ -1,5 +1,4 @@
-﻿using EasyDbLib.Tests.Common;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Threading.Tasks;
@@ -50,7 +49,8 @@ namespace EasyDbLib.Tests.Core
             db.AddPendingOperation(() => db.InsertAsync<User>(new User { UserName = "u4" }));
 
             // constraint on user permission
-            db.AddPendingOperation(() => db.DeleteAsync<User>(Check.Op("Id",1)));
+            var user = await db.SelectOneAsync<User>(Check.Op("Id", 1));
+            db.AddPendingOperation(() => db.DeleteAsync<User>(user,Check.Op("Id",1)));
 
             Assert.AreEqual(2, db.PendingOperations.Count);
 

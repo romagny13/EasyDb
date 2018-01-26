@@ -23,11 +23,11 @@ namespace EasyDbLib
         protected ICloneService cloneService;
         protected IInterceptionManager interceptionManager;
 
+        public static EasyDb Default => Singleton<EasyDb>.Instance;
+
         internal IQueryService queryService;
 
         public ConnectionWrapper WrappedConnection { get; protected set; }
-
-        public bool HandleExecutionExceptions { get; set; }
 
         public DefaultMappingBehavior DefaultMappingBehavior
         {
@@ -35,24 +35,24 @@ namespace EasyDbLib
             set { this.mappingContainer.DefaultMappingBehavior = value; }
         }
 
+        public bool HandleExecutionExceptions { get; set; }
+
         public IReadOnlyList<IDbInterceptor> Interceptors => this.interceptionManager.Interceptors;
 
         public IReadOnlyList<Func<Task>> PendingOperations => pendingOperationManager.PendingOperations;
 
-        public static EasyDb Default => Singleton<EasyDb>.Instance;
-
         public EasyDb() : this(
-            new MappingContainer(),
-            new DefaultModelFactory(),
-            new DefaultSelectionAllCommandFactory(),
-            new DefaultSelectionOneCommandFactory(),
-            new DefaultInsertCommandFactory(),
-            new DefaultUpdateCommandFactory(),
-            new DefaultDeleteCommandFactory(),
-            new DefaultCountCommandFactory(),
-            new PendingOperationManager(),
-            new CloneService(),
-            new InterceptionManager())
+             new MappingContainer(),
+             new DefaultModelFactory(),
+             new DefaultSelectionAllCommandFactory(),
+             new DefaultSelectionOneCommandFactory(),
+             new DefaultInsertCommandFactory(),
+             new DefaultUpdateCommandFactory(),
+             new DefaultDeleteCommandFactory(),
+             new DefaultCountCommandFactory(),
+             new PendingOperationManager(),
+             new CloneService(),
+             new InterceptionManager())
         { }
 
         public EasyDb(
@@ -97,8 +97,10 @@ namespace EasyDbLib
             this.defaultCountCommandFactory.SetDb(this);
         }
 
+        #region Connection
+
         public void SetConnectionStringSettings(string connectionString, string providerName,
-            ConnectionStrategy connectionStrategy = ConnectionStrategy.Auto)
+           ConnectionStrategy connectionStrategy = ConnectionStrategy.Auto)
         {
             Guard.IsNullOrEmpty(connectionString);
             Guard.IsNullOrEmpty(providerName);
@@ -139,10 +141,9 @@ namespace EasyDbLib
             this.queryService = QueryServiceFactory.GetQueryService(providerName);
         }
 
-        public Table<TModel> TryGetTable<TModel>() where TModel : class, new()
-        {
-            return this.mappingContainer.TryGetTable<TModel>();
-        }
+        #endregion // Connection
+
+        #region Mapping
 
         public Table<TModel> DiscoverMappingFor<TModel>() where TModel : class, new()
         {
@@ -161,10 +162,19 @@ namespace EasyDbLib
             return this.mappingContainer.IsTableRegistered<TModel>();
         }
 
+        public Table<TModel> TryGetTable<TModel>() where TModel : class, new()
+        {
+            return this.mappingContainer.TryGetTable<TModel>();
+        }
+
         public Table<TModel> GetTable<TModel>() where TModel : class, new()
         {
             return this.mappingContainer.GetTable<TModel>();
         }
+
+        #endregion // Mapping
+
+        #region Interceptors
 
         public void AddInterceptor(IDbInterceptor interceptor)
         {
@@ -185,15 +195,9 @@ namespace EasyDbLib
             this.interceptionManager.Clear();
         }
 
-        public T DeepClone<T>(T value)
-        {
-            return this.cloneService.DeepClone<T>(value);
-        }
+        #endregion // Interceptors
 
-        public T CheckDBNullAndConvertTo<T>(object value)
-        {
-            return value == DBNull.Value ? default(T) : (T)value;
-        }
+        #region CreateCommand
 
         public DbCommand CreateCommand(string commandText, CommandType commandType)
         {
@@ -215,6 +219,32 @@ namespace EasyDbLib
         {
             return this.CreateCommand(storedProcedureName, CommandType.StoredProcedure);
         }
+
+        #endregion // CreateCommand
+
+        #region Util
+
+        public T DeepClone<T>(T value)
+        {
+            return this.cloneService.DeepClone<T>(value);
+        }
+
+        public T CheckDBNullAndConvertTo<T>(object value)
+        {
+            return value == DBNull.Value ? default(T) : (T)value;
+        }
+
+        protected void DoHandleException(Exception ex)
+        {
+            if (ex != null && this.HandleExecutionExceptions)
+            {
+                throw ex;
+            }
+        }
+
+        #endregion // Util
+
+        #region SelectionAll
 
         public async Task<List<TModel>> SelectAllAsync<TModel>(DbCommand command, Func<IDataReader, EasyDb, TModel> modelFactory) where TModel : class, new()
         {
@@ -238,15 +268,12 @@ namespace EasyDbLib
                     }
                 }
 
-                this.interceptionManager.OnSelectAllExecuted(command, new DbInterceptionContext<List<TModel>>(result));
+                this.interceptionManager.OnSelectAllExecuted(command, new DbInterceptionContext(result));
             }
             catch (Exception ex)
             {
-                this.interceptionManager.OnSelectAllExecuted(command, new DbInterceptionContext<List<TModel>>(result, ex));
-                if (this.HandleExecutionExceptions)
-                {
-                    throw ex;
-                }
+                this.interceptionManager.OnSelectAllExecuted(command, new DbInterceptionContext(result, ex));
+                this.DoHandleException(ex);
             }
             finally
             {
@@ -254,6 +281,13 @@ namespace EasyDbLib
             }
 
             return result;
+        }
+
+        public async Task<List<TModel>> SelectAllAsync<TModel>(DbCommand command) where TModel : class, new()
+        {
+            TryGetTable<TModel>();
+
+            return await this.SelectAllAsync<TModel>(command, this.defaultModelFactory.CreateModel<TModel>);
         }
 
         public async Task<List<TModel>> SelectAllAsync<TModel, TCriteria>(
@@ -273,18 +307,33 @@ namespace EasyDbLib
         }
 
         public async Task<List<TModel>> SelectAllAsync<TModel>(
-          ISelectionAllCommandFactory<TModel, NullCriteria> selectionAllCommandFactory,
-          IModelFactory<TModel> modelFactory)
-          where TModel : class, new()
+            ISelectionAllCommandFactory<TModel, NullCriteria> selectionAllCommandFactory,
+            IModelFactory<TModel> modelFactory)
+            where TModel : class, new()
         {
             return await this.SelectAllAsync<TModel, NullCriteria>(selectionAllCommandFactory, modelFactory, new NullCriteria());
         }
 
-        public async Task<List<TModel>> SelectAllAsync<TModel>(DbCommand command) where TModel : class, new()
+        public async Task<List<TModel>> SelectAllAsync<TModel, TCriteria>(
+            ISelectionAllCommandFactory<TModel, TCriteria> selectionAllCommandFactory,
+            TCriteria criteria)
+         where TModel : class, new()
         {
+            Guard.IsNull(selectionAllCommandFactory);
+
             TryGetTable<TModel>();
 
-            return await this.SelectAllAsync<TModel>(command, this.defaultModelFactory.CreateModel<TModel>);
+            using (var command = selectionAllCommandFactory.CreateCommand(this, criteria))
+            {
+                return await this.SelectAllAsync<TModel>(command, this.defaultModelFactory.CreateModel<TModel>);
+            }
+        }
+
+        public async Task<List<TModel>> SelectAllAsync<TModel>(
+            ISelectionAllCommandFactory<TModel, NullCriteria> selectionAllCommandFactory)
+            where TModel : class, new()
+        {
+            return await this.SelectAllAsync<TModel, NullCriteria>(selectionAllCommandFactory, new NullCriteria());
         }
 
         public async Task<List<TModel>> SelectAllAsync<TModel>(int? limit, Check condition, string[] sorts, Func<IDataReader, EasyDb, TModel> modelFactory) where TModel : class, new()
@@ -303,8 +352,11 @@ namespace EasyDbLib
             }
         }
 
-        public async Task<TModel> SelectOneAsync<TModel>(DbCommand command, Func<IDataReader, EasyDb, TModel> modelFactory)
-            where TModel : class, new()
+        #endregion // SelectAll
+
+        #region SelectOne
+
+        public async Task<TModel> SelectOneAsync<TModel>(DbCommand command, Func<IDataReader, EasyDb, TModel> modelFactory) where TModel : class, new()
         {
             Guard.IsNull(command);
             Guard.IsNull(modelFactory);
@@ -325,15 +377,12 @@ namespace EasyDbLib
                     }
                 }
 
-                this.interceptionManager.OnSelectOneExecuted(command, new DbInterceptionContext<TModel>(model));
+                this.interceptionManager.OnSelectOneExecuted(command, new DbInterceptionContext(model));
             }
             catch (Exception ex)
             {
-                this.interceptionManager.OnSelectOneExecuted(command, new DbInterceptionContext<TModel>(model, ex));
-                if (this.HandleExecutionExceptions)
-                {
-                    throw ex;
-                }
+                this.interceptionManager.OnSelectOneExecuted(command, new DbInterceptionContext(model, ex));
+                this.DoHandleException(ex);
             }
             finally
             {
@@ -341,6 +390,13 @@ namespace EasyDbLib
             }
 
             return model;
+        }
+
+        public async Task<TModel> SelectOneAsync<TModel>(DbCommand command) where TModel : class, new()
+        {
+            TryGetTable<TModel>();
+
+            return await this.SelectOneAsync<TModel>(command, this.defaultModelFactory.CreateModel<TModel>);
         }
 
         public async Task<TModel> SelectOneAsync<TModel, TCriteria>(
@@ -359,12 +415,19 @@ namespace EasyDbLib
             }
         }
 
-        public async Task<TModel> SelectOneAsync<TModel>(DbCommand command)
-            where TModel : class, new()
+        public async Task<TModel> SelectOneAsync<TModel, TCriteria>(
+           ISelectionOneCommandFactory<TCriteria> selectionOneCommandFactory,
+           TCriteria criteria)
+           where TModel : class, new()
         {
+            Guard.IsNull(selectionOneCommandFactory);
+
             TryGetTable<TModel>();
 
-            return await this.SelectOneAsync<TModel>(command, this.defaultModelFactory.CreateModel<TModel>);
+            using (var command = selectionOneCommandFactory.CreateCommand(this, criteria))
+            {
+                return await this.SelectOneAsync<TModel>(command, this.defaultModelFactory.CreateModel<TModel>);
+            }
         }
 
         public async Task<TModel> SelectOneAsync<TModel>(Check condition, Func<IDataReader, EasyDb, TModel> modelFactory)
@@ -385,7 +448,122 @@ namespace EasyDbLib
             }
         }
 
-        public async Task<object> InsertAsync<TModel>(DbCommand command, TModel model, Action<DbCommand, TModel, object> setNewId, DbTransaction transaction = null)
+        #endregion // SelectOne
+
+        #region Execute
+
+        protected async Task<int> DoExecuteNonQueryAsync(DbCommand command, Action onExecuting, Action<int, Exception> onExecuted, DbTransaction transaction = null)
+        {
+            Guard.IsNull(command);
+
+            int rowsAffected = 0;
+            try
+            {
+                if (transaction != null)
+                {
+                    command.Transaction = transaction;
+                }
+
+                onExecuting();
+
+                await this.WrappedConnection.CheckStrategyAndOpenAsync();
+
+                rowsAffected = await command.ExecuteNonQueryAsync();
+
+                onExecuted(rowsAffected, null);
+            }
+            catch (Exception ex)
+            {
+                onExecuted(rowsAffected, ex);
+            }
+            finally
+            {
+                this.WrappedConnection.CheckStrategyAndClose();
+            }
+            return rowsAffected;
+        }
+
+        protected async Task<object> DoExecuteScalarAsync(DbCommand command, Action onExecuting, Action<object, Exception> onExecuted, DbTransaction transaction = null)
+        {
+            Guard.IsNull(command);
+
+            object result = null;
+            try
+            {
+                if (transaction != null)
+                {
+                    command.Transaction = transaction;
+                }
+
+                onExecuting();
+
+                await this.WrappedConnection.CheckStrategyAndOpenAsync();
+
+                result = await command.ExecuteScalarAsync();
+
+                onExecuted(result, null);
+            }
+            catch (Exception ex)
+            {
+                onExecuted(result, ex);
+            }
+            finally
+            {
+                this.WrappedConnection.CheckStrategyAndClose();
+            }
+
+            return result;
+        }
+
+        public async Task<int> ExecuteNonQueryAsync(DbCommand command, DbTransaction transaction = null)
+        {
+            return await this.DoExecuteNonQueryAsync(command, () =>
+            {
+                this.interceptionManager.OnNonQueryExecuting(command);
+            },
+            (rowsAffected, ex) =>
+            {
+                this.interceptionManager.OnNonQueryExecuted(command, new DbInterceptionContext(rowsAffected, ex));
+                this.DoHandleException(ex);
+            }, transaction);
+        }
+
+        public async Task<object> ExecuteScalarAsync(DbCommand command, DbTransaction transaction = null)
+        {
+            return await this.DoExecuteScalarAsync(command, () =>
+            {
+                this.interceptionManager.OnScalarExecuting(command);
+            },
+            (result, ex) =>
+            {
+                this.interceptionManager.OnScalarExecuted(command, new DbInterceptionContext(result, ex));
+                this.DoHandleException(ex);
+            }, transaction);
+        }
+
+        #endregion // Execute
+
+        #region Count
+
+        public async Task<int> CountAsync<TModel>(Check condition, DbTransaction transaction = null) where TModel : class, new()
+        {
+            TryGetTable<TModel>();
+
+            using (var command = this.defaultCountCommandFactory.GetCommand<TModel>(condition))
+            {
+                object result = await this.ExecuteScalarAsync(command, transaction);
+                return Convert.ToInt32(result);
+            }
+        }
+
+        #endregion // Count
+
+        #region InsertAsync
+
+        protected async Task<object> DoInsertAsync<TModel>(
+            DbCommand command, TModel model,
+            Action<DbCommand, TModel, object> setNewId,
+            DbTransaction transaction = null)
             where TModel : class, new()
         {
             Guard.IsNull(model);
@@ -395,15 +573,35 @@ namespace EasyDbLib
                 && table.PrimaryKeys.Count() == 1
                 && table.PrimaryKeys[0].IsDatabaseGenerated)
             {
-                var lastInsertedId = await this.ExecuteScalarAsync(command, transaction);
+                var lastInsertedId = await this.DoExecuteScalarAsync(command, () =>
+                {
+                    this.interceptionManager.OnInserting(command, model);
+                },
+                (result, ex) =>
+                {
+                    this.interceptionManager.OnInserted(command, new DbInterceptionContext(model, result, ex));
+                    this.DoHandleException(ex);
+                }, transaction);
                 setNewId?.Invoke(command, model, lastInsertedId);
                 return lastInsertedId;
             }
-
-            return await this.ExecuteNonQueryAsync(command, transaction);
+            else
+            {
+                return await this.DoExecuteNonQueryAsync(command, () =>
+                {
+                    this.interceptionManager.OnInserting(command, model);
+                },
+               (result, ex) =>
+               {
+                   this.interceptionManager.OnInserted(command, new DbInterceptionContext(model, result, ex));
+                   this.DoHandleException(ex);
+               }, transaction);
+            }
         }
 
-        public async Task<object> InsertAsync<TModel>(IInsertCommandFactory<TModel> insertCommandFactory, TModel model,
+        public async Task<object> InsertAsync<TModel>(
+            IInsertCommandFactory<TModel> insertCommandFactory,
+            TModel model,
             DbTransaction transaction = null)
             where TModel : class, new()
         {
@@ -414,7 +612,7 @@ namespace EasyDbLib
 
             using (var command = insertCommandFactory.CreateCommand(this, model))
             {
-                return await this.InsertAsync<TModel>(command, model, insertCommandFactory.SetNewId);
+                return await this.DoInsertAsync<TModel>(command, model, insertCommandFactory.SetNewId);
             }
         }
 
@@ -425,19 +623,32 @@ namespace EasyDbLib
 
             using (var command = this.defaultInsertCommandFactory.GetCommand(model))
             {
-                return await this.InsertAsync<TModel>(command, model, this.defaultInsertCommandFactory.SetNewId);
+                return await this.DoInsertAsync<TModel>(command, model, this.defaultInsertCommandFactory.SetNewId);
             }
         }
 
-        public async Task<int> UpdateAsync<TModel>(DbCommand command, DbTransaction transaction = null) where TModel : class, new()
-        {
-            TryGetTable<TModel>();
+        #endregion // InsertAsync
 
-            return await this.ExecuteNonQueryAsync(command, transaction);
+        #region UpdateAsync
+
+        protected async Task<int> DoUpdateAsync<TModel>(DbCommand command, TModel model, DbTransaction transaction = null) where TModel : class, new()
+        {
+            return await this.DoExecuteNonQueryAsync(command, () =>
+            {
+                this.interceptionManager.OnUpdating(command, model);
+            },
+            (result, ex) =>
+            {
+                this.interceptionManager.OnUpdated(command, new DbInterceptionContext(model, result, ex));
+                this.DoHandleException(ex);
+            }, transaction);
         }
 
-        public async Task<int> UpdateAsync<TModel>(IUpdateCommandFactory<TModel> updateCommandFactory,
-           TModel model, DbTransaction transaction = null) where TModel : class, new()
+        public async Task<int> UpdateAsync<TModel>(
+            IUpdateCommandFactory<TModel> updateCommandFactory,
+            TModel model,
+            DbTransaction transaction = null)
+            where TModel : class, new()
         {
             Guard.IsNull(updateCommandFactory);
             Guard.IsNull(model);
@@ -446,25 +657,39 @@ namespace EasyDbLib
 
             using (var command = updateCommandFactory.CreateCommand(this, model))
             {
-                return await this.ExecuteNonQueryAsync(command, transaction);
+                return await this.DoUpdateAsync(command, model, transaction);
             }
         }
 
-        public async Task<int> UpdateAsync<TModel>(TModel model, Check condition, DbTransaction transaction = null) where TModel : class, new()
+        public async Task<int> UpdateAsync<TModel>(
+            TModel model,
+            Check condition,
+            DbTransaction transaction = null)
+            where TModel : class, new()
         {
             Guard.IsNull(model);
 
             using (var command = this.defaultUpdateCommandFactory.GetCommand(model, condition))
             {
-                return await this.ExecuteNonQueryAsync(command, transaction);
+                return await this.DoUpdateAsync(command, model, transaction);
             }
         }
 
-        public async Task<int> DeleteAsync<TModel>(DbCommand command, DbTransaction transaction = null) where TModel : class, new()
-        {
-            TryGetTable<TModel>();
+        #endregion // UpdateAsync
 
-            return await this.ExecuteNonQueryAsync(command, transaction);
+        #region DeleteAsync
+
+        protected async Task<int> DoDeleteAsync<TModel>(DbCommand command, TModel model, DbTransaction transaction = null) where TModel : class, new()
+        {
+            return await this.DoExecuteNonQueryAsync(command, () =>
+            {
+                this.interceptionManager.OnDeleting(command, model);
+            },
+            (result, ex) =>
+            {
+                this.interceptionManager.OnDeleted(command, new DbInterceptionContext(model, result, ex));
+                this.DoHandleException(ex);
+            }, transaction);
         }
 
         public async Task<int> DeleteAsync<TModel>(
@@ -480,28 +705,22 @@ namespace EasyDbLib
 
             using (var command = deleteCommandFactory.CreateCommand(this, model))
             {
-                return await this.ExecuteNonQueryAsync(command, transaction);
+                return await DoDeleteAsync(command, model, transaction);
             }
         }
 
-        public async Task<int> DeleteAsync<TModel>(Check condition, DbTransaction transaction = null) where TModel : class, new()
+        public async Task<int> DeleteAsync<TModel>(TModel model, Check condition, DbTransaction transaction = null) where TModel : class, new()
         {
             using (var command = this.defaultDeleteCommandFactory.GetCommand<TModel>(condition))
             {
-                return await this.ExecuteNonQueryAsync(command, transaction);
+                return await DoDeleteAsync(command, model, transaction);
             }
         }
 
-        public async Task<int> CountAsync<TModel>(Check condition, DbTransaction transaction = null) where TModel : class, new()
-        {
-            TryGetTable<TModel>();
 
-            using (var command = this.defaultCountCommandFactory.GetCommand<TModel>(condition))
-            {
-                object result = await this.ExecuteScalarAsync(command, transaction);
-                return Convert.ToInt32(result);
-            }
-        }
+        #endregion // DeleteAsync
+
+        #region Transaction
 
         public async Task<bool> ExecuteTransactionFactoryAsync(TransactionFactory transactionFactory)
         {
@@ -521,77 +740,7 @@ namespace EasyDbLib
             return await this.pendingOperationManager.Execute(this);
         }
 
-        public async Task<int> ExecuteNonQueryAsync(DbCommand command, DbTransaction transaction = null)
-        {
-            Guard.IsNull(command);
-
-            int rowsAffected = 0;
-            try
-            {
-                if (transaction != null)
-                {
-                    command.Transaction = transaction;
-                }
-
-                this.interceptionManager.OnNonQueryExecuting(command);
-
-                await this.WrappedConnection.CheckStrategyAndOpenAsync();
-
-                rowsAffected = await command.ExecuteNonQueryAsync();
-
-                this.interceptionManager.OnNonQueryExecuted(command, new DbInterceptionContext<int>(rowsAffected));
-            }
-            catch (Exception ex)
-            {
-                this.interceptionManager.OnNonQueryExecuted(command, new DbInterceptionContext<int>(rowsAffected, ex));
-                if (this.HandleExecutionExceptions)
-                {
-                    throw ex;
-                }
-            }
-            finally
-            {
-                this.WrappedConnection.CheckStrategyAndClose();
-            }
-            return rowsAffected;
-        }
-
-        public async Task<object> ExecuteScalarAsync(DbCommand command, DbTransaction transaction = null)
-        {
-            Guard.IsNull(command);
-
-            object result = null;
-            try
-            {
-                if (transaction != null)
-                {
-                    command.Transaction = transaction;
-                }
-
-                this.interceptionManager.OnScalarExecuting(command);
-
-                await this.WrappedConnection.CheckStrategyAndOpenAsync();
-
-                result = await command.ExecuteScalarAsync();
-
-                this.interceptionManager.OnScalarExecuted(command, new DbInterceptionContext<object>(result));
-            }
-            catch (Exception ex)
-            {
-                this.interceptionManager.OnScalarExecuted(command, new DbInterceptionContext<object>(result, ex));
-                if (this.HandleExecutionExceptions)
-                {
-                    throw ex;
-                }
-            }
-            finally
-            {
-                this.WrappedConnection.CheckStrategyAndClose();
-            }
-
-            return result;
-        }
-
+        #endregion // Transaction
     }
 
 }

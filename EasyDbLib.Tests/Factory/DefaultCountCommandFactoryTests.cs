@@ -1,8 +1,7 @@
-﻿using EasyDbLib.Tests.Factory;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Data;
 
-namespace EasyDbLib.Tests
+namespace EasyDbLib.Tests.Factory
 {
     [TestClass]
     public class DefaultCountCommandFactoryTests

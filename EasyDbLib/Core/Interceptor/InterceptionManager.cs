@@ -7,7 +7,6 @@ namespace EasyDbLib
 
     public class InterceptionManager : IInterceptionManager
     {
-
         protected List<IDbInterceptor> interceptors;
         public IReadOnlyList<IDbInterceptor> Interceptors => this.interceptors;
 
@@ -49,7 +48,7 @@ namespace EasyDbLib
             this.Process((interceptor) => interceptor.OnSelectAllExecuting(command));
         }
 
-        public void OnSelectAllExecuted<TModel>(DbCommand command, DbInterceptionContext<List<TModel>> interceptionContext)
+        public void OnSelectAllExecuted(DbCommand command, DbInterceptionContext interceptionContext)
         {
             this.Process((interceptor) => interceptor.OnSelectAllExecuted(command, interceptionContext));
         }
@@ -59,9 +58,39 @@ namespace EasyDbLib
             this.Process((interceptor) => interceptor.OnSelectOneExecuting(command));
         }
 
-        public void OnSelectOneExecuted<TModel>(DbCommand command, DbInterceptionContext<TModel> interceptionContext)
+        public void OnSelectOneExecuted(DbCommand command, DbInterceptionContext interceptionContext)
         {
             this.Process((interceptor) => interceptor.OnSelectOneExecuted(command, interceptionContext));
+        }     
+
+        public void OnInserting(DbCommand command, object model)
+        {
+            this.Process((interceptor) => interceptor.OnInserting(command, model));
+        }
+
+        public void OnInserted(DbCommand command, DbInterceptionContext interceptionContext)
+        {
+            this.Process((interceptor) => interceptor.OnInserted(command, interceptionContext));
+        }
+
+        public void OnUpdating(DbCommand command, object model) 
+        {
+            this.Process((interceptor) => interceptor.OnUpdating(command, model));
+        }
+
+        public void OnUpdated(DbCommand command, DbInterceptionContext interceptionContext)
+        {
+            this.Process((interceptor) => interceptor.OnUpdated(command, interceptionContext));
+        }
+
+        public void OnDeleting(DbCommand command, object model) 
+        {
+            this.Process((interceptor) => interceptor.OnDeleting(command, model));
+        }
+
+        public void OnDeleted(DbCommand command, DbInterceptionContext interceptionContext) 
+        {
+            this.Process((interceptor) => interceptor.OnDeleted(command, interceptionContext));
         }
 
         public void OnScalarExecuting(DbCommand command)
@@ -69,7 +98,7 @@ namespace EasyDbLib
             this.Process((interceptor) => interceptor.OnScalarExecuting(command));
         }
 
-        public void OnScalarExecuted(DbCommand command, DbInterceptionContext<object> interceptionContext)
+        public void OnScalarExecuted(DbCommand command, DbInterceptionContext interceptionContext)
         {
             this.Process((interceptor) => interceptor.OnScalarExecuted(command, interceptionContext));
         }
@@ -79,10 +108,9 @@ namespace EasyDbLib
             this.Process((interceptor) => interceptor.OnNonQueryExecuting(command));
         }
 
-        public void OnNonQueryExecuted(DbCommand command, DbInterceptionContext<int> interceptionContext)
+        public void OnNonQueryExecuted(DbCommand command, DbInterceptionContext interceptionContext)
         {
             this.Process((interceptor) => interceptor.OnNonQueryExecuted(command, interceptionContext));
         }
-
     }
 }

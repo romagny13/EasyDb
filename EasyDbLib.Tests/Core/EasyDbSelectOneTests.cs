@@ -1,5 +1,4 @@
-﻿using EasyDbLib.Tests.Common;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Threading.Tasks;
@@ -17,7 +16,36 @@ namespace EasyDbLib.Tests.Core
         }
 
         [TestMethod]
-        public async Task SelectOne()
+        public async Task SelectOne_WithCommand_And_ModelFactory()
+        {
+            var db = new EasyDb();
+            db.SetConnectionStringSettings(DbConstants.SqlDb1, DbConstants.SqlProviderName);
+
+            db.DefaultMappingBehavior = DefaultMappingBehavior.CreateEmptyTable;
+
+            User result = null;
+
+            using (var command = db.CreateSqlCommand("select * from [User] where [Id]=@id").AddInParameter("@id", 1))
+            {
+                result = await db.SelectOneAsync<User>(command, (reader, idb) =>
+                {
+                    return new User
+                    {
+                        Id = (int)reader["Id"],
+                        UserName = ((string)reader["UserName"]).Trim(),
+                        Email = idb.CheckDBNullAndConvertTo<string>(reader["Email"])?.Trim(),
+                        Age = idb.CheckDBNullAndConvertTo<int?>(reader["Age"])
+                    };
+                });
+            }
+
+            Assert.AreEqual("Marie", result.UserName);
+            Assert.AreEqual(null, result.Age);
+            Assert.AreEqual("marie@domain.com", result.Email);
+        }
+
+        [TestMethod]
+        public async Task SelectOne_WithCommand_And_DefaultModelFactory()
         {
             var db = new EasyDb();
             db.SetConnectionStringSettings(DbConstants.SqlDb1, DbConstants.SqlProviderName);
@@ -34,6 +62,36 @@ namespace EasyDbLib.Tests.Core
             Assert.AreEqual("Marie", result.UserName);
             Assert.AreEqual(null, result.Age);
             Assert.AreEqual("marie@domain.com", result.Email);
+        }
+
+        [TestMethod]
+        public async Task SelectOne_WithSelectionOneCommandFactory_And_ModelFactory()
+        {
+            var db = new EasyDb();
+            db.SetConnectionStringSettings(DbConstants.SqlDb1, DbConstants.SqlProviderName);
+
+            db.DefaultMappingBehavior = DefaultMappingBehavior.CreateEmptyTable;
+
+            var result = await db.SelectOneAsync<User, int>(new UserSelectionOneFactory(), new UserModelFactory(), 2);
+
+            Assert.AreEqual("Pat", result.UserName);
+            Assert.AreEqual(30, result.Age);
+            Assert.AreEqual(null, result.Email);
+        }
+
+        [TestMethod]
+        public async Task SelectOne_WithSelectionOneCommandFactory_And_DefaultModelFactory()
+        {
+            var db = new EasyDb();
+            db.SetConnectionStringSettings(DbConstants.SqlDb1, DbConstants.SqlProviderName);
+
+            db.DefaultMappingBehavior = DefaultMappingBehavior.CreateEmptyTable;
+
+            var result = await db.SelectOneAsync<User, int>(new UserSelectionOneFactory(), 2);
+
+            Assert.AreEqual("Pat", result.UserName);
+            Assert.AreEqual(30, result.Age);
+            Assert.AreEqual(null, result.Email);
         }
 
         [TestMethod]
@@ -86,9 +144,32 @@ namespace EasyDbLib.Tests.Core
             Assert.AreEqual(null, result.Email);
         }
 
+        [TestMethod]
+        public async Task SelectOne_WithCondition_And_ModelFactory()
+        {
+            var db = new EasyDb();
+            db.SetConnectionStringSettings(DbConstants.SqlDb1, DbConstants.SqlProviderName);
+
+            db.DefaultMappingBehavior = DefaultMappingBehavior.CreateEmptyTable;
+
+            var result = await db.SelectOneAsync<User>(Check.Op("Age", ">", 26), (reader, idb) =>
+            {
+                return new User
+                {
+                    Id = (int)reader["Id"],
+                    UserName = ((string)reader["UserName"]).Trim(),
+                    Email = idb.CheckDBNullAndConvertTo<string>(reader["Email"])?.Trim(),
+                    Age = idb.CheckDBNullAndConvertTo<int?>(reader["Age"])
+                };
+            });
+
+            Assert.AreEqual("Pat", result.UserName);
+            Assert.AreEqual(30, result.Age);
+            Assert.AreEqual(null, result.Email);
+        }
 
         [TestMethod]
-        public async Task SelectOne_WithCondition()
+        public async Task SelectOne_WithCondition_And_DefaultModelFactory()
         {
             var db = new EasyDb();
             db.SetConnectionStringSettings(DbConstants.SqlDb1, DbConstants.SqlProviderName);
@@ -102,25 +183,6 @@ namespace EasyDbLib.Tests.Core
             Assert.AreEqual(null, result.Email);
         }
 
-        [TestMethod]
-        public async Task SelectOne_WithSelectionOneCommandFactory()
-        {
-            var db = new EasyDb();
-            db.SetConnectionStringSettings(DbConstants.SqlDb1, DbConstants.SqlProviderName);
-
-            db.DefaultMappingBehavior = DefaultMappingBehavior.CreateEmptyTable;
-
-            var user = new User
-            {
-                Id = 2
-            };
-
-            var result = await db.SelectOneAsync(new UserSelectionOneFactory(), new UserModelFactory(), user);
-
-            Assert.AreEqual("Pat", result.UserName);
-            Assert.AreEqual(30, result.Age);
-            Assert.AreEqual(null, result.Email);
-        }
 
         [TestMethod]
         public async Task SelectOne_WithModelFactory()
@@ -155,12 +217,12 @@ namespace EasyDbLib.Tests.Core
 
     }
 
-    public class UserSelectionOneFactory : ISelectionOneCommandFactory<User>
+    public class UserSelectionOneFactory : ISelectionOneCommandFactory<int>
     {
-        public DbCommand CreateCommand(EasyDb db, User model)
+        public DbCommand CreateCommand(EasyDb db, int id)
         {
             return db.CreateSqlCommand("select * from [User] where Id=@id")
-                .AddInParameter("@id", model.Id);
+                .AddInParameter("@id", id);
         }
     }
 

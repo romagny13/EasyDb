@@ -2,7 +2,7 @@
 using EasyDbLib.Tests.Factory;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace EasyDbLib.Tests
+namespace EasyDbLib.Tests.Core
 {
     [TestClass]
     public class EasyDbMappingTests

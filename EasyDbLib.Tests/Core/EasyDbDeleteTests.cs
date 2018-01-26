@@ -1,5 +1,4 @@
-﻿using EasyDbLib.Tests.Common;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Data.Common;
 using System.Threading.Tasks;
 
@@ -25,26 +24,8 @@ namespace EasyDbLib.Tests.Core
 
             db.DefaultMappingBehavior = DefaultMappingBehavior.CreateEmptyTable;
 
-            var result = await db.DeleteAsync<User>(Check.Op("Id", 3));
-
-            Assert.AreEqual(1, result);
-        }
-
-        [TestMethod]
-        public async Task Delete_WithCommand()
-        {
-            var db = new EasyDb();
-
-            db.SetConnectionStringSettings(DbConstants.SqlDb1, DbConstants.SqlProviderName);
-
-            db.DefaultMappingBehavior = DefaultMappingBehavior.CreateEmptyTable;
-
-            int result = 0;
-            using (var command = db.CreateSqlCommand("delete from [User] where Id=@id")
-                .AddInParameter("@id", 4))
-            {
-                result = await db.DeleteAsync<User>(command);
-            }
+            var model = await db.SelectOneAsync<User>(Check.Op("Id", 3));
+            var result = await db.DeleteAsync<User>(model, Check.Op("Id", 3));
 
             Assert.AreEqual(1, result);
         }

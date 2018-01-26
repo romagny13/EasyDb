@@ -4,7 +4,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{EC814479-C946-4D23-B69F-C9315C67E400}</ProjectGuid>
+    <ProjectGuid>{77FA97A4-499D-459F-A032-F5AF193FC91D}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>EasyDbLib.Tests</RootNamespace>
@@ -51,14 +51,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Common\FactoryModels.cs" />
-    <Compile Include="Common\Models.cs" />
     <Compile Include="Condition\CheckBetweenTests.cs" />
     <Compile Include="Condition\CheckLikeTests.cs" />
     <Compile Include="Condition\CheckNullTests.cs" />
     <Compile Include="Condition\CheckOpTests.cs" />
     <Compile Include="Core\CloneServiceTests.cs" />
+    <Compile Include="Core\ConfigurationProtectionManagerTests.cs" />
     <Compile Include="Core\ConnectionWrapperTests.cs" />
+    <Compile Include="Core\DbHelperTests.cs" />
     <Compile Include="Core\DbInterceptorTests.cs" />
     <Compile Include="Core\EasyDbDeleteTests.cs" />
     <Compile Include="Core\EasyDbInsertTests.cs" />
@@ -70,9 +70,9 @@
     <Compile Include="Core\EasyDbSelectOneTests.cs" />
     <Compile Include="Core\EasyDbTransactionOperationTests.cs" />
     <Compile Include="Core\EasyDbUpdateTests.cs" />
+    <Compile Include="Core\Models.cs" />
     <Compile Include="Core\MySQLTest.cs" />
     <Compile Include="Core\OleDbTests.cs" />
-    <Compile Include="Core\DbHelperTests.cs" />
     <Compile Include="Factory\DefaultCountCommandFactoryTests.cs" />
     <Compile Include="Factory\DefaultDeleteCommandFactoryTests.cs" />
     <Compile Include="Factory\DefaultInsertCommandFactoryTests.cs" />
@@ -80,6 +80,7 @@
     <Compile Include="Factory\DefaultSelectionAllCommandFactoryTests.cs" />
     <Compile Include="Factory\DefaultSelectionOneCommandFactoryTests.cs" />
     <Compile Include="Factory\DefaultUpdateCommandFactoryTests.cs" />
+    <Compile Include="Factory\Models.cs" />
     <Compile Include="InitDb.cs" />
     <Compile Include="Mapping\MappingTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -88,11 +89,12 @@
     <Compile Include="Query\QueryServiceTests.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\EasyDbLib\EasyDbLib.csproj">
-      <Project>{7913bc3b-02e1-49b5-acef-a891a40c1da3}</Project>
+      <Project>{90b4ee6e-bd16-44da-8205-cf38536a25f0}</Project>
       <Name>EasyDbLib</Name>
     </ProjectReference>
   </ItemGroup>

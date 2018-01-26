@@ -3,13 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2010
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Source", "Source", "{AF4F9A48-5036-47F9-97C9-D8E2E85B2C04}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Source", "Source", "{BFBA5111-8C7B-4962-90AE-4196A509AFC2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EasyDbLib", "EasyDbLib\EasyDbLib.csproj", "{7913BC3B-02E1-49B5-ACEF-A891A40C1DA3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EasyDbLib", "EasyDbLib\EasyDbLib.csproj", "{90B4EE6E-BD16-44DA-8205-CF38536A25F0}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{3D8CA537-5B40-44AB-A517-846C9703E447}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{70A9F3B8-5D53-46E8-96BC-BC46255F0D74}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EasyDbLib.Tests", "EasyDbLib.Tests\EasyDbLib.Tests.csproj", "{EC814479-C946-4D23-B69F-C9315C67E400}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EasyDbLib.Tests", "EasyDbLib.Tests\EasyDbLib.Tests.csproj", "{77FA97A4-499D-459F-A032-F5AF193FC91D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,23 +17,23 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{7913BC3B-02E1-49B5-ACEF-A891A40C1DA3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7913BC3B-02E1-49B5-ACEF-A891A40C1DA3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7913BC3B-02E1-49B5-ACEF-A891A40C1DA3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7913BC3B-02E1-49B5-ACEF-A891A40C1DA3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{EC814479-C946-4D23-B69F-C9315C67E400}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{EC814479-C946-4D23-B69F-C9315C67E400}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{EC814479-C946-4D23-B69F-C9315C67E400}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{EC814479-C946-4D23-B69F-C9315C67E400}.Release|Any CPU.Build.0 = Release|Any CPU
+		{90B4EE6E-BD16-44DA-8205-CF38536A25F0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{90B4EE6E-BD16-44DA-8205-CF38536A25F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{90B4EE6E-BD16-44DA-8205-CF38536A25F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{90B4EE6E-BD16-44DA-8205-CF38536A25F0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{77FA97A4-499D-459F-A032-F5AF193FC91D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{77FA97A4-499D-459F-A032-F5AF193FC91D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{77FA97A4-499D-459F-A032-F5AF193FC91D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{77FA97A4-499D-459F-A032-F5AF193FC91D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{7913BC3B-02E1-49B5-ACEF-A891A40C1DA3} = {AF4F9A48-5036-47F9-97C9-D8E2E85B2C04}
-		{EC814479-C946-4D23-B69F-C9315C67E400} = {3D8CA537-5B40-44AB-A517-846C9703E447}
+		{90B4EE6E-BD16-44DA-8205-CF38536A25F0} = {BFBA5111-8C7B-4962-90AE-4196A509AFC2}
+		{77FA97A4-499D-459F-A032-F5AF193FC91D} = {70A9F3B8-5D53-46E8-96BC-BC46255F0D74}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {96A03ECF-6B44-4DB4-9655-9173FBADFAB5}
+		SolutionGuid = {668F681E-856C-4496-8717-30E96618D608}
 	EndGlobalSection
 EndGlobal

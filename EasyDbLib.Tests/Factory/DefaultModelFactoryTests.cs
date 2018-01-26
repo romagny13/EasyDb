@@ -5,7 +5,7 @@ using System.Linq;
 using EasyDbLib.Tests.Factory;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace EasyDbLib.Tests
+namespace EasyDbLib.Tests.Factory
 {
     [TestClass]
     public class DefaultModelFactoryTests

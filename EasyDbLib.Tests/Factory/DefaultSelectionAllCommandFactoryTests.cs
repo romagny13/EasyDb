@@ -2,7 +2,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Data;
 
-namespace EasyDbLib.Tests
+namespace EasyDbLib.Tests.Factory
 {
     [TestClass]
     public class DefaultSelectionAllCommandFactoryTests

@@ -6,7 +6,7 @@ using System.Data;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace EasyDbLib.Tests
+namespace EasyDbLib.Tests.Core
 {
     [TestClass]
     public class MySQLTest
@@ -113,7 +113,7 @@ namespace EasyDbLib.Tests
 
             Assert.AreEqual(1, r2);
 
-            var r3 = await db.DeleteAsync<MySQLUser>(Check.Op("id", result));
+            var r3 = await db.DeleteAsync<MySQLUser>(user,Check.Op("id", result));
             Assert.AreEqual(1, r3);
         }      
 
